@@ -1,0 +1,22 @@
+name: Verify live image fix
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/verify-image-fix.yml"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Check deployed widget image URL logic
+        shell: bash
+        run: |
+          set -e
+          url="https://script.google.com/macros/s/AKfycbwqjj6hFQ3PGNNMeAXgLBWj5Nq6yAQh65XbR4JKlqV_7wuqPGtUIhJnavZAXv96rgyI0w/exec?action=widget&v=20260930-1605"
+          curl -L -sS --max-time 120 -o /tmp/widget.js -w 'http=%{http_code} total=%{time_total}\n' "$url"
+          grep -F 'function publicImageUrl' /tmp/widget.js
+          grep -F 'https://lh3.googleusercontent.com/d/' /tmp/widget.js
