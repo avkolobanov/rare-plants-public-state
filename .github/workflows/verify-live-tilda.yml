@@ -20,13 +20,13 @@ jobs:
           echo "=== markers ==="
           for p in             'plant-auction-universal'             'action=widget&v=20260930-1557'             'paCatalogV43'             'var BOOT='             'rare-plants-public-state'             'catalog.json'
           do
-            c="$(grep -F -o "$p" /tmp/page.html | wc -l)"
+            c="$(grep -F -o "$p" /tmp/page.html 2>/dev/null | wc -l || true)"
             echo "$p=$c"
           done
           echo "=== widget ==="
-          curl -L -sS --max-time 120 -o /tmp/widget.js "https://script.google.com/macros/s/AKfycbwqjj6hFQ3PGNNMeAXgLBWj5Nq6yAQh65XbR4JKlqV_7wuqPGtUIhJnavZAXv96rgyI0w/exec?action=widget&v=20260930-1557"
+          curl -L -sS --max-time 120 -o /tmp/widget.js -w 'widget_http=%{http_code} total=%{time_total}\n' "https://script.google.com/macros/s/AKfycbwqjj6hFQ3PGNNMeAXgLBWj5Nq6yAQh65XbR4JKlqV_7wuqPGtUIhJnavZAXv96rgyI0w/exec?action=widget&v=20260930-1557"
           grep -F 'function loadCatalog' /tmp/widget.js
           grep -F '/catalog.json?_' /tmp/widget.js
           echo "=== catalog ==="
-          curl -L -sS --max-time 30 -o /tmp/catalog.json "https://avkolobanov.github.io/rare-plants-public-state/state/catalog.json"
-          python -c 'import json; d=json.load(open("/tmp/catalog.json")); print([x.get("id") for x in d.get("auctions",[])])'
+          curl -L -sS --max-time 30 -o /tmp/catalog.json -w 'catalog_http=%{http_code} total=%{time_total}\n' "https://avkolobanov.github.io/rare-plants-public-state/state/catalog.json"
+          python -c 'import json; d=json.load(open("/tmp/catalog.json")); print(json.dumps({"ids":[x.get("id") for x in d.get("auctions",[])],"counts":d.get("counts")},ensure_ascii=False))'
