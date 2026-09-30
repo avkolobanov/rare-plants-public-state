@@ -1,0 +1,29 @@
+name: Inspect live auctions page
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/inspect-live-auctions.yml"
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Inspect live page HTML
+        shell: bash
+        run: |
+          set -e
+          url="https://planthunt.ru/auctions"
+          curl -L -sS --max-time 60 -D /tmp/headers -o /tmp/page.html -w 'http=%{http_code} total=%{time_total}\n' "$url"
+          echo "size=$(wc -c < /tmp/page.html)"
+          echo "=== script.google refs ==="
+          grep -oE 'https://script\.google\.com[^"<> ]+' /tmp/page.html | head -20 || true
+          echo "=== deployment ids ==="
+          grep -oE 'AKfycb[A-Za-z0-9_-]+' /tmp/page.html | sort -u || true
+          echo "=== auction markers ==="
+          grep -oE 'plant-auction-universal|plant-auction-app|rec4099964301|rec4227562401|A009|action=widget' /tmp/page.html | sort | uniq -c || true
+          echo "=== widget/public-state markers ==="
+          grep -oE 'rare-plants-public-state|catalog\.json|PUBLIC_STATE_URL|PublicWidget' /tmp/page.html | sort | uniq -c || true
