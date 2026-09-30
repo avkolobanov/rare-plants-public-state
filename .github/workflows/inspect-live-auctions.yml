@@ -17,13 +17,18 @@ jobs:
         run: |
           set -e
           url="https://planthunt.ru/auctions"
-          curl -L -sS --max-time 60 -D /tmp/headers -o /tmp/page.html -w 'http=%{http_code} total=%{time_total}\n' "$url"
-          echo "size=$(wc -c < /tmp/page.html)"
-          echo "=== script.google refs ==="
-          grep -oE 'https://script\.google\.com[^"<> ]+' /tmp/page.html | head -20 || true
-          echo "=== deployment ids ==="
-          grep -oE 'AKfycb[A-Za-z0-9_-]+' /tmp/page.html | sort -u || true
-          echo "=== auction markers ==="
-          grep -oE 'plant-auction-universal|plant-auction-app|rec4099964301|rec4227562401|A009|action=widget' /tmp/page.html | sort | uniq -c || true
-          echo "=== widget/public-state markers ==="
-          grep -oE 'rare-plants-public-state|catalog\.json|PUBLIC_STATE_URL|PublicWidget' /tmp/page.html | sort | uniq -c || true
+          curl -L -sS --max-time 60 -o /tmp/page.html "$url"
+          python - <<'PY'
+from pathlib import Path
+s=Path("/tmp/page.html").read_text(errors="replace")
+needles=[
+  "AKfycbwqjj6hFQ3PGNNMeAXgLBWj5Nq6yAQh65XbR4JKlqV_7wuqPGtUIhJnavZAXv96rgyI0w",
+  "rec4099964301",
+  "rec4227562401"
+]
+for n in needles:
+    i=s.find(n)
+    print("\n=== NEEDLE:",n,"INDEX:",i,"===")
+    if i>=0:
+        print(s[max(0,i-5000):min(len(s),i+12000)])
+PY
