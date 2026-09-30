@@ -1,0 +1,27 @@
+name: Probe auction images
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/probe-images.yml"
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probe Drive image URLs
+        shell: bash
+        run: |
+          set -e
+          for id in             1w70h_qryNNGI3e9LhMIR6eMXZTcQWzIe             1D7Ihc9pnYFxIsi20ymG052khn8G787h8             1nsl2svE5xcVytgyWwDYlQKj27Kvq4l3m
+          do
+            url="https://drive.google.com/uc?export=view&id=$id"
+            echo "=== $id ==="
+            curl -L -sS --max-time 30 -D /tmp/h -o /tmp/b -w 'http=%{http_code} total=%{time_total} type=%{content_type} size=%{size_download}\n' "$url"
+            grep -iE '^(content-type|content-disposition|x-frame-options|location):' /tmp/h | tail -10 || true
+            file /tmp/b || true
+            head -c 80 /tmp/b | xxd -g 1 || true
+          done
