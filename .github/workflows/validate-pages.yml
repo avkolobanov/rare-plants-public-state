@@ -1,0 +1,45 @@
+name: Validate Pages state
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/validate-pages.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read public A009 JSON
+        shell: bash
+        run: |
+          set -e
+          url="https://avkolobanov.github.io/rare-plants-public-state/state/A009.json"
+          for i in 1 2 3 4 5; do
+            code="$(curl -L -sS --max-time 30 -o /tmp/a009.json -w '%{http_code}' "$url")"
+            echo "attempt=$i http=$code"
+            if [ "$code" = "200" ]; then
+              python - <<'PY'
+import json
+d=json.load(open("/tmp/a009.json",encoding="utf-8"))
+print(json.dumps({
+  "auctionId": d.get("auctionId"),
+  "generatedAt": d.get("generatedAt"),
+  "cuttings": [
+    {
+      "id": x.get("id"),
+      "currentPrice": x.get("currentPrice"),
+      "bidCount": x.get("bidCount"),
+      "nextBid": x.get("nextBid")
+    }
+    for x in ((d.get("data") or {}).get("cuttings") or [])
+  ]
+}, ensure_ascii=False))
+PY
+              exit 0
+            fi
+            sleep 5
+          done
+          exit 1
