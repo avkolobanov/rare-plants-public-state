@@ -18,17 +18,4 @@ jobs:
           set -e
           url="https://planthunt.ru/auctions"
           curl -L -sS --max-time 60 -o /tmp/page.html "$url"
-          python - <<'PY'
-from pathlib import Path
-s=Path("/tmp/page.html").read_text(errors="replace")
-needles=[
-  "AKfycbwqjj6hFQ3PGNNMeAXgLBWj5Nq6yAQh65XbR4JKlqV_7wuqPGtUIhJnavZAXv96rgyI0w",
-  "rec4099964301",
-  "rec4227562401"
-]
-for n in needles:
-    i=s.find(n)
-    print("\n=== NEEDLE:",n,"INDEX:",i,"===")
-    if i>=0:
-        print(s[max(0,i-5000):min(len(s),i+12000)])
-PY
+          python -c 'from pathlib import Path; s=Path("/tmp/page.html").read_text(errors="replace"); n="AKfycbwqjj6hFQ3PGNNMeAXgLBWj5Nq6yAQh65XbR4JKlqV_7wuqPGtUIhJnavZAXv96rgyI0w"; i=s.find(n); print(s[max(0,i-4000):min(len(s),i+9000)] if i>=0 else "API_NOT_FOUND")'
