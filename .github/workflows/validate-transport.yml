@@ -1,0 +1,22 @@
+name: Validate public state transport
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/validate-transport.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check A009 JSON
+        shell: bash
+        run: |
+          set -e
+          url="https://avkolobanov.github.io/rare-plants-public-state/state/A009.json"
+          curl -L -sS -D /tmp/headers -o /tmp/a009.json -w 'http=%{http_code} total=%{time_total}\n' "$url"
+          grep -i '^access-control-allow-origin:' /tmp/headers || true
+          python -c 'import json; d=json.load(open("/tmp/a009.json")); print(d["auctionId"], d["data"]["cuttings"][0]["currentPrice"], d["data"]["cuttings"][0]["bidCount"])'
