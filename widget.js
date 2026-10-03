@@ -137,6 +137,96 @@
     }
   }
 
+  function liveAuctionStatus(item) {
+    item =
+      item || {};
+
+    var internalStatus =
+      String(
+        item.internalStatus !==
+          undefined
+          ? item.internalStatus
+          : (
+              item.status !==
+                undefined
+                ? item.status
+                : ""
+            )
+      ).trim();
+
+    if (
+      internalStatus ===
+      "Черновик"
+    ) {
+      return "draft";
+    }
+
+    if (
+      internalStatus ===
+      "Завершён"
+    ) {
+      return "archive";
+    }
+
+    if (
+      internalStatus ===
+        "Блиц-резерв" ||
+      internalStatus ===
+        "Блиц"
+    ) {
+      return "reserve";
+    }
+
+    var now =
+      Date.now();
+
+    var start =
+      Date.parse(
+        item.start || ""
+      );
+
+    var end =
+      Date.parse(
+        item.end || ""
+      );
+
+    if (
+      isFinite(start) &&
+      start > now
+    ) {
+      return "upcoming";
+    }
+
+    if (
+      internalStatus ===
+        "Активен" ||
+      internalStatus ===
+        "active" ||
+      internalStatus ===
+        "upcoming" ||
+      internalStatus ===
+        "ending" ||
+      !internalStatus
+    ) {
+      if (
+        isFinite(end) &&
+        end <= now
+      ) {
+        return "ending";
+      }
+
+      return "active";
+    }
+
+    return String(
+      item.publicStatus ||
+      item.status ||
+      ""
+    ).trim() ||
+      "active";
+  }
+
+
   function statusLabel(status) {
     if (status === "active") {
       return "Идёт сейчас";
@@ -146,8 +236,20 @@
       return "Скоро";
     }
 
+    if (status === "reserve") {
+      return "Блиц-резерв";
+    }
+
+    if (status === "ending") {
+      return "Завершается";
+    }
+
     if (status === "archive") {
       return "Завершён";
+    }
+
+    if (status === "draft") {
+      return "Готовится";
     }
 
     return status || "Аукцион";
@@ -654,15 +756,35 @@
 
         data.auctions.forEach(
           function(item) {
+            var liveStatus =
+              liveAuctionStatus(
+                item
+              );
+
+            item.status =
+              liveStatus;
+
             if (
-              groups[
-                item.status
-              ]
+              liveStatus ===
+              "draft"
             ) {
-              groups[
-                item.status
-              ].push(item);
+              return;
             }
+
+            var groupKey =
+              liveStatus ===
+                "archive"
+                ? "archive"
+                : (
+                    liveStatus ===
+                      "upcoming"
+                      ? "upcoming"
+                      : "active"
+                  );
+
+            groups[
+              groupKey
+            ].push(item);
           }
         );
 
@@ -989,6 +1111,11 @@
         var auction =
           data.auction;
 
+        var liveStatus =
+          liveAuctionStatus(
+            auction
+          );
+
         var html =
           '<section class="pau-detail">' +
 
@@ -1005,7 +1132,7 @@
                 '<div class="pau-status">' +
                   escapeHtml(
                     statusLabel(
-                      auction.publicStatus
+                      liveStatus
                     )
                   ) +
                 '</div>' +
