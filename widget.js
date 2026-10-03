@@ -55,6 +55,7 @@ var mode=qs.has('auction')?'detail':'catalog';
 var poll=null;
 var countTimer=null;
 var catalogTimer=null;
+var catalogRefreshInFlight=false;
 var cbn=0;
 var last=null;
 var lastCatalog=null;
@@ -399,28 +400,49 @@ function saveCat(d){
   }catch(e){}
 }
 
-function loadCatalog(){
-  var cached=readCat();
-  if(cached)renderCatalog(cached);
-  else app.innerHTML='<div class="pa-load">Загружаем аукционы...</div>';
+function refreshCatalog(){
+  if(lastCatalog){
+    renderCatalog(lastCatalog);
+  }
+
+  if(catalogRefreshInFlight)return;
+
+  catalogRefreshInFlight=true;
 
   fetchJson(
     PUBLIC_STATE+'/catalog.json?_='+Date.now(),
     function(d){
       if(d&&d.ok===true&&Array.isArray(d.auctions)){
+        catalogRefreshInFlight=false;
         saveCat(d);
         renderCatalog(d);
         return;
       }
+
       loadCatalogLegacy();
     },
-    loadCatalogLegacy
+    function(){
+      loadCatalogLegacy();
+    }
   );
+}
+
+function loadCatalog(){
+  var cached=readCat();
+
+  if(cached){
+    renderCatalog(cached);
+  }else{
+    app.innerHTML='<div class="pa-load">Загружаем аукционы...</div>';
+  }
+
+  refreshCatalog();
 
   if(!catalogTimer){
-    catalogTimer=setInterval(function(){
-      if(lastCatalog)renderCatalog(lastCatalog);
-    },10000);
+    catalogTimer=setInterval(
+      refreshCatalog,
+      10000
+    );
   }
 }
 
@@ -428,6 +450,8 @@ function loadCatalogLegacy(){
   jsonp(
     {action:'auctions'},
     function(d){
+      catalogRefreshInFlight=false;
+
       if(d&&d.ok===true&&Array.isArray(d.auctions)){
         saveCat(d);
         renderCatalog(d);
@@ -436,6 +460,8 @@ function loadCatalogLegacy(){
       }
     },
     function(){
+      catalogRefreshInFlight=false;
+
       if(!lastCatalog){
         app.innerHTML='<div class="pa-err">Не удалось загрузить список аукционов.</div>';
       }
