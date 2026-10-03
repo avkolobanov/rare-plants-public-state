@@ -1,0 +1,102 @@
+name: Verify live status logic
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/verify-live-status.yml"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify static widget and A010 phases
+        shell: bash
+        run: |
+          set -e
+          widget="https://avkolobanov.github.io/rare-plants-public-state/widget.js"
+          catalog="https://avkolobanov.github.io/rare-plants-public-state/state/catalog.json"
+
+          ok=0
+          for i in $(seq 1 30); do
+            code="$(curl -L -sS --max-time 20 -o /tmp/widget.js -w '%{http_code}' "$widget" || true)"
+            echo "widget_attempt=$i http=$code"
+            if [ "$code" = "200" ] && grep -Fq 'function liveAuctionStatus' /tmp/widget.js; then
+              ok=1
+              break
+            fi
+            sleep 5
+          done
+          [ "$ok" = "1" ]
+
+          node --check /tmp/widget.js
+
+          curl -L -sS --max-time 20 -o /tmp/catalog.json "$catalog"
+
+          cat > /tmp/test-status.js <<'NODE'
+          const fs = require("fs");
+          const vm = require("vm");
+
+          let code = fs.readFileSync("/tmp/widget.js", "utf8");
+          code = code.replace(
+            /\}\)\(\);\s*$/,
+            "globalThis.__liveAuctionStatus = liveAuctionStatus;})();"
+          );
+
+          global.window = {
+            location: { search: "" }
+          };
+
+          global.document = {
+            readyState: "loading",
+            addEventListener() {},
+            getElementById() { return null; },
+            createElement() { return {}; },
+            head: { appendChild() {} },
+            body: { appendChild() {} }
+          };
+
+          vm.runInThisContext(code);
+
+          const catalog = JSON.parse(
+            fs.readFileSync("/tmp/catalog.json", "utf8")
+          );
+          const a010 = catalog.auctions.find(x => x.id === "A010");
+          if (!a010) throw new Error("A010 missing from catalog");
+
+          const realNow = Date.now;
+
+          Date.now = () => Date.parse("2026-10-03T06:07:00.000Z");
+          const at0907 = global.__liveAuctionStatus(a010);
+
+          Date.now = () => Date.parse("2026-10-03T07:01:00.000Z");
+          const afterEnd = global.__liveAuctionStatus(a010);
+
+          const finished = {
+            status: "Завершён",
+            start: "2026-10-03T06:00:00.000Z",
+            end: "2026-10-03T07:00:00.000Z"
+          };
+
+          Date.now = () => Date.parse("2026-10-03T06:07:00.000Z");
+          const serverFinished = global.__liveAuctionStatus(finished);
+
+          Date.now = realNow;
+
+          console.log(JSON.stringify({
+            snapshotStatus: a010.status,
+            internalStatus: a010.internalStatus,
+            at0907,
+            afterEnd,
+            serverFinished
+          }));
+
+          if (at0907 !== "active") throw new Error("A010 should be active at 09:07 MSK");
+          if (afterEnd !== "ending") throw new Error("A010 should be ending after end until server finish");
+          if (serverFinished !== "archive") throw new Error("Finished server status should be archive");
+NODE
+
+          node /tmp/test-status.js
+          echo "LIVE_STATUS_OK"
