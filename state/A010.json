@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "auctionId": "A010",
+  "generatedAt": "2026-10-03T07:08:30.000Z",
+  "data": {
+    "ok": true,
+    "apiVersion": "v14",
+    "auction": {
+      "id": "A010",
+      "plant": "Ромашка",
+      "status": "Завершён",
+      "mode": "Рабочий",
+      "timezone": "Europe/Moscow",
+      "publicStatus": "archive",
+      "description": "Стандартный аукцион",
+      "pageUrl": "",
+      "start": "2026-10-03T06:00:00.000Z",
+      "end": "2026-10-03T07:00:00.000Z",
+      "blitz": {
+        "enabled": true,
+        "price": 10000,
+        "paymentMinutes": 2
+      },
+      "blitzSale": null,
+      "photos": [
+        {
+          "id": "1RVAgeeS7gR00L6j42hHA-Jh9eqbNOtwy",
+          "auctionId": "A010",
+          "cuttingId": "",
+          "url": "https://drive.google.com/uc?export=view&id=1RVAgeeS7gR00L6j42hHA-Jh9eqbNOtwy",
+          "order": 1,
+          "isMain": true,
+          "caption": ""
+        }
+      ],
+      "mainPhoto": {
+        "id": "1RVAgeeS7gR00L6j42hHA-Jh9eqbNOtwy",
+        "auctionId": "A010",
+        "cuttingId": "",
+        "url": "https://drive.google.com/uc?export=view&id=1RVAgeeS7gR00L6j42hHA-Jh9eqbNOtwy",
+        "order": 1,
+        "isMain": true,
+        "caption": ""
+      }
+    },
+    "cuttings": [
+      {
+        "id": "A010-C01",
+        "number": 1,
+        "type": "Верхушка",
+        "startPrice": 1000,
+        "step": 100,
+        "description": "Описание верхушки",
+        "currentPrice": 7000,
+        "bidCount": 4,
+        "nextBid": 7100,
+        "sold": true,
+        "finalPrice": 7000,
+        "photos": [
+          {
+            "id": "1IY7PeCVqGQPBajEoXIBbwfOslLP1yKeC",
+            "auctionId": "A010",
+            "cuttingId": "A010-C01",
+            "url": "https://drive.google.com/uc?export=view&id=1IY7PeCVqGQPBajEoXIBbwfOslLP1yKeC",
+            "order": 1,
+            "isMain": true,
+            "caption": ""
+          }
+        ],
+        "mainPhoto": {
+          "id": "1IY7PeCVqGQPBajEoXIBbwfOslLP1yKeC",
+          "auctionId": "A010",
+          "cuttingId": "A010-C01",
+          "url": "https://drive.google.com/uc?export=view&id=1IY7PeCVqGQPBajEoXIBbwfOslLP1yKeC",
+          "order": 1,
+          "isMain": true,
+          "caption": ""
+        }
+      },
+      {
+        "id": "A010-C02",
+        "number": 2,
+        "type": "Стеблевой",
+        "startPrice": 2000,
+        "step": 200,
+        "description": "Описание стеблевой",
+        "currentPrice": 2000,
+        "bidCount": 1,
+        "nextBid": 2200,
+        "sold": true,
+        "finalPrice": 2000,
+        "photos": [
+          {
+            "id": "1j_1fOtyZmW1UZQ4mKUBq2GXMscBxG-VK",
+            "auctionId": "A010",
+            "cuttingId": "A010-C02",
+            "url": "https://drive.google.com/uc?export=view&id=1j_1fOtyZmW1UZQ4mKUBq2GXMscBxG-VK",
+            "order": 1,
+            "isMain": true,
+            "caption": ""
+          }
+        ],
+        "mainPhoto": {
+          "id": "1j_1fOtyZmW1UZQ4mKUBq2GXMscBxG-VK",
+          "auctionId": "A010",
+          "cuttingId": "A010-C02",
+          "url": "https://drive.google.com/uc?export=view&id=1j_1fOtyZmW1UZQ4mKUBq2GXMscBxG-VK",
+          "order": 1,
+          "isMain": true,
+          "caption": ""
+        }
+      },
+      {
+        "id": "A010-C03",
+        "number": 3,
+        "type": "Корневой",
+        "startPrice": 3000,
+        "step": 300,
+        "description": "",
+        "currentPrice": 3821,
+        "bidCount": 1,
+        "nextBid": 4121,
+        "sold": true,
+        "finalPrice": 3821,
+        "photos": [
+          {
+            "id": "1bi12I4PDOJ_RaveKZRY91LX_M0bZKLWi",
+            "auctionId": "A010",
+            "cuttingId": "A010-C03",
+            "url": "https://drive.google.com/uc?export=view&id=1bi12I4PDOJ_RaveKZRY91LX_M0bZKLWi",
+            "order": 1,
+            "isMain": true,
+            "caption": ""
+          }
+        ],
+        "mainPhoto": {
+          "id": "1bi12I4PDOJ_RaveKZRY91LX_M0bZKLWi",
+          "auctionId": "A010",
+          "cuttingId": "A010-C03",
+          "url": "https://drive.google.com/uc?export=view&id=1bi12I4PDOJ_RaveKZRY91LX_M0bZKLWi",
+          "order": 1,
+          "isMain": true,
+          "caption": ""
+        }
+      }
+    ],
+    "updatedAt": "2026-10-03T07:08:30.000Z"
+  }
+}
