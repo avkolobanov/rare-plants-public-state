@@ -4,7 +4,7 @@
   "generatedAt": "2026-10-03T09:25:54.990Z",
   "data": {
     "ok": true,
-    "apiVersion": "v14",
+    "apiVersion": "v15",
     "auction": {
       "id": "A014",
       "plant": "Крапива",
