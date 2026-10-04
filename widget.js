@@ -5,7 +5,7 @@ var API='https://script.google.com/macros/s/AKfycbwqjj6hFQ3PGNNMeAXgLBWj5Nq6yAQh
 var PUBLIC_STATE='https://avkolobanov.github.io/rare-plants-public-state/state';
 var BOT='plant_hunt_auction_bot';
 
-var POLL=15000;
+var POLL=7000;
 var REQ_TIMEOUT=18000;
 var STATIC_TIMEOUT=5000;
 var DETAIL_CACHE_MS=30000;
