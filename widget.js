@@ -83,22 +83,9 @@ function freshnessCondition(){
 }
 
 function updateFreshnessNotice(){
-  var condition=freshnessCondition();
+  // Version checks remain internal; no service notice in the user interface.
   var node=document.getElementById('pa-freshness');
-  if(condition==='confirmed'||condition==='loading'){
-    if(node&&node.parentNode)node.parentNode.removeChild(node);
-    return;
-  }
-  if(!node){
-    node=document.createElement('div');
-    node.id='pa-freshness';
-    node.className='pa-notice pa-warn';
-    node.setAttribute('role','status');
-    app.insertBefore(node,app.firstChild);
-  }
-  node.textContent=condition==='pending'||condition==='outdated'
-    ?'Данные обновляются. Показана последняя загруженная версия.'
-    :'Актуальность данных пока не подтверждена. Проверка повторится автоматически.';
+  if(node&&node.parentNode)node.parentNode.removeChild(node);
 }
 
 function validateFreshnessInfo(data){
@@ -708,7 +695,7 @@ function buildDetailView(d){
         '</div>':
         '')+
       '<div id="pa-detail-status" class="pa-foot">'+
-        (p==='archive'?'Итоговые данные аукциона':'Данные обновляются автоматически')+
+        (p==='archive'?'':'Данные обновляются автоматически')+
       '</div>'+
     '</div>';
 
