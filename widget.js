@@ -3,6 +3,7 @@
 
 var API='https://script.google.com/macros/s/AKfycbwqjj6hFQ3PGNNMeAXgLBWj5Nq6yAQh65XbR4JKlqV_7wuqPGtUIhJnavZAXv96rgyI0w/exec';
 var PUBLIC_STATE='https://avkolobanov.github.io/rare-plants-public-state/state';
+var PUBLIC_STATE_RAW='https://raw.githubusercontent.com/avkolobanov/rare-plants-public-state/main/state';
 var BOT='plant_hunt_auction_bot';
 
 var POLL=7000;
@@ -15,7 +16,6 @@ var DETAIL_RETRY_DELAY=3000;
 var DETAIL_MAX_RETRIES=1;
 var FRESHNESS_INTERVAL=30000;
 var FRESHNESS_MIN_INTERVAL=30000;
-var FRESHNESS_VALID_MS=45000;
 
 var host=document.getElementById('plant-auction-universal');
 if(!host)return;
@@ -77,71 +77,23 @@ var lightboxItems=[];
 var lightboxIndex=0;
 var lightboxBodyOverflow='';
 var lightboxTouchStartX=null;
-var freshnessInfo=null;
-var freshnessCheckedAt=0;
 var freshnessStartedAt=-FRESHNESS_MIN_INTERVAL;
-var freshnessInFlight=false;
 var freshnessTimer=null;
 
-function freshnessCondition(){
-  var data=mode==='detail'?last:lastCatalog;
-  if(!data)return'loading';
-  if(!freshnessInfo||Date.now()-freshnessCheckedAt>FRESHNESS_VALID_MS)return'unknown';
-  if(freshnessInfo.pending)return'pending';
-  if(!freshnessInfo.confirmedRevision||!data.syncRevision)return'legacy';
-  return data.syncRevision===freshnessInfo.confirmedRevision?'confirmed':'outdated';
-}
-
 function updateFreshnessNotice(){
-  // Version checks remain internal; no service notice in the user interface.
   var node=document.getElementById('pa-freshness');
   if(node&&node.parentNode)node.parentNode.removeChild(node);
 }
 
-function validateFreshnessInfo(data){
-  return !!(data&&data.ok===true&&data.syncSchema===1&&
-    data.kind===(mode==='detail'?'detail':'catalog')&&
-    data.auctionId===(mode==='detail'?aid:'')&&
-    typeof data.confirmedRevision==='string'&&data.confirmedRevision.length<=128&&
-    typeof data.pending==='boolean');
-}
-
 function checkFreshness(){
-  if(freshnessInFlight||Date.now()-freshnessStartedAt<FRESHNESS_MIN_INTERVAL)return;
-  if(mode==='detail'&&!/^[A-Za-z0-9_-]{1,64}$/.test(aid))return;
-  freshnessInFlight=true;
-  freshnessStartedAt=Date.now();
-  var params={action:'syncstate'};
-  if(mode==='detail')params.auction=aid;
-  jsonp(params,function(data){
-    freshnessInFlight=false;
-    freshnessInfo=validateFreshnessInfo(data)?data:null;
-    freshnessCheckedAt=Date.now();
-    updateFreshnessNotice();
-    var condition=freshnessCondition();
-    if(condition!=='confirmed'&&condition!=='loading'){
-      // This independent check also runs after archive has stopped its normal poll.
-      if(mode==='detail')requestDetail();
-      else refreshCatalog();
-    }
-  },function(){
-    freshnessInFlight=false;
-    freshnessInfo=null;
-    freshnessCheckedAt=Date.now();
-    updateFreshnessNotice();
-    if(mode==='detail')requestDetail();
-    else refreshCatalog();
-  });
+  if(Date.now()-freshnessStartedAt<FRESHNESS_MIN_INTERVAL)return;
+  if(mode==='detail')requestDetail();
 }
 
 function startFreshnessChecks(){
-  updateFreshnessNotice();
-  checkFreshness();
-  if(!freshnessTimer){
-    freshnessTimer=setInterval(function(){
-      updateFreshnessNotice();
-      checkFreshness();
-    },FRESHNESS_INTERVAL);
+  // Archived data still refreshes, without a separate Apps Script request.
+  if(mode==='detail'&&!freshnessTimer){
+    freshnessTimer=setInterval(checkFreshness,FRESHNESS_INTERVAL);
   }
 }
 
@@ -341,7 +293,11 @@ function fetchJson(url,ok,fail){
 
   window.fetch(url,options)
     .then(function(response){
-      if(!response.ok)throw new Error('HTTP '+response.status);
+      if(!response.ok){
+        var error=new Error('HTTP '+response.status);
+        error.status=response.status;
+        throw error;
+      }
       return response.json();
     })
     .then(function(data){
@@ -356,6 +312,70 @@ function fetchJson(url,ok,fail){
       clearTimeout(timer);
       fail(error);
     });
+
+  return function(){
+    if(done)return;
+    done=true;
+    clearTimeout(timer);
+    if(controller)controller.abort();
+  };
+}
+
+function fetchState(path,validate,ok,fail){
+  var done=false;
+  var remaining=2;
+  var errors=[];
+  var cancel=[];
+  var stamp=Date.now();
+  var urls=[PUBLIC_STATE,PUBLIC_STATE_RAW];
+
+  function rejected(error){
+    if(done)return;
+    errors.push(error);
+    remaining--;
+    if(remaining)return;
+    done=true;
+    fail({type:'transport',missing:errors.every(function(e){return e&&e.status===404;}),
+      message:'Не удалось загрузить данные из статических источников.'});
+  }
+
+  urls.forEach(function(base){
+    cancel.push(fetchJson(base+'/'+path+'?_='+stamp,function(data){
+      if(done)return;
+      try{
+        var accepted=validate(data);
+        if(!accepted.ok)throw new Error(accepted.error||'Некорректный снимок.');
+        done=true;
+        cancel.forEach(function(stop){if(stop)stop();});
+        ok(accepted.data);
+      }catch(error){
+        if(!done)rejected(error);
+        else throw error;
+      }
+    },rejected));
+  });
+}
+
+function validateCatalogSnapshot(data){
+  if(lastCatalog&&lastCatalog.updatedAt&&data&&data.updatedAt&&
+    Date.parse(data.updatedAt)<Date.parse(lastCatalog.updatedAt))return{ok:false,error:'Получен более старый каталог.'};
+  if(!data||data.ok!==true||!Array.isArray(data.auctions))return{ok:false,error:'Некорректный каталог.'};
+  for(var i=0;i<data.auctions.length;i++){
+    if(!data.auctions[i]||!String(data.auctions[i].id||'').trim())return{ok:false,error:'Некорректный аукцион каталога.'};
+  }
+  return{ok:true,data:data};
+}
+
+function validateDetailSnapshot(snapshot){
+  if(!snapshot||typeof snapshot!=='object')return{ok:false,error:'Некорректный снимок.'};
+  if(snapshot.schemaVersion!=null&&snapshot.schemaVersion!==1)return{ok:false,error:'Неизвестная версия снимка.'};
+  if(snapshot.auctionId&&snapshot.auctionId!==aid)return{ok:false,error:'Снимок другого аукциона.'};
+  var checked=validateDetail(snapshot.data);
+  if(!checked.ok)return checked;
+  if(snapshot.syncRevision!==snapshot.data.syncRevision)return{ok:false,error:'Версии снимка не совпадают.'};
+  if(last&&last.updatedAt&&snapshot.data.updatedAt&&
+    Date.parse(snapshot.data.updatedAt)<Date.parse(last.updatedAt))return{ok:false,error:'Получен более старый снимок.'};
+  return{ok:true,data:snapshot.data};
 }
 
 function img(photo,alt,id,base,index){
@@ -569,30 +589,16 @@ function saveCat(d){
 }
 
 function refreshCatalog(){
-  if(lastCatalog){
-    renderCatalog(lastCatalog);
-  }
-
   if(catalogRefreshInFlight)return;
-
   catalogRefreshInFlight=true;
-
-  fetchJson(
-    PUBLIC_STATE+'/catalog.json?_='+Date.now(),
-    function(d){
-      if(d&&d.ok===true&&Array.isArray(d.auctions)){
-        catalogRefreshInFlight=false;
-        saveCat(d);
-        renderCatalog(d);
-        return;
-      }
-
-      loadCatalogLegacy();
-    },
-    function(){
-      loadCatalogLegacy();
-    }
-  );
+  fetchState('catalog.json',validateCatalogSnapshot,function(d){
+    catalogRefreshInFlight=false;
+    renderCatalog(d);
+    saveCat(d);
+  },function(){
+    catalogRefreshInFlight=false;
+    if(!lastCatalog)app.innerHTML='<div class="pa-err">Не удалось загрузить список аукционов.</div>';
+  });
 }
 
 function loadCatalog(){
@@ -614,28 +620,6 @@ function loadCatalog(){
   }
 }
 
-function loadCatalogLegacy(){
-  jsonp(
-    {action:'auctions'},
-    function(d){
-      catalogRefreshInFlight=false;
-
-      if(d&&d.ok===true&&Array.isArray(d.auctions)){
-        saveCat(d);
-        renderCatalog(d);
-      }else if(!lastCatalog){
-        app.innerHTML='<div class="pa-err">Не удалось загрузить список аукционов.</div>';
-      }
-    },
-    function(){
-      catalogRefreshInFlight=false;
-
-      if(!lastCatalog){
-        app.innerHTML='<div class="pa-err">Не удалось загрузить список аукционов.</div>';
-      }
-    }
-  );
-}
 
 function countText(target){
   var ms=Date.parse(target)-Date.now();
@@ -1001,30 +985,17 @@ function requestDetailLegacy(){
 
 function requestDetail(){
   if(activeDetailRequests>0)return;
-
   activeDetailRequests=1;
+  freshnessStartedAt=Date.now();
   clearDetailLoadTimers();
-
-  detailSlowTimer=setTimeout(function(){
-    detailProgress('Данные обновляются медленнее обычного. Продолжаем ждать…',false);
-  },DETAIL_SLOW_DELAY);
-
-  fetchJson(
-    PUBLIC_STATE+'/'+encodeURIComponent(aid)+'.json?_='+Date.now(),
-    function(snapshot){
-      if(snapshot&&snapshot.data){
-        if(snapshot.syncRevision!==snapshot.data.syncRevision){
-          snapshot.data.syncRevision="";
-        }
-        handleDetailSuccess(snapshot.data);
-        return;
-      }
-      requestDetailLegacy();
-    },
-    function(){
-      requestDetailLegacy();
-    }
-  );
+  fetchState(encodeURIComponent(aid)+'.json',validateDetailSnapshot,handleDetailSuccess,function(error){
+    // Drafts have no published snapshot yet. Only two explicit 404s may use
+    // the existing direct-link API; timeout/invalid data never starts JSONP.
+    if(error.missing&&!last){requestDetailLegacy();return;}
+    activeDetailRequests=0;
+    detailProgress('Ошибка связи: '+error.message,true);
+    scheduleDetailRetry();
+  });
 }
 
 function startDetailLoadCycle(){
