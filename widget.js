@@ -13,6 +13,9 @@ var CATALOG_CACHE_MS=300000;
 var DETAIL_SLOW_DELAY=12000;
 var DETAIL_RETRY_DELAY=3000;
 var DETAIL_MAX_RETRIES=1;
+var FRESHNESS_INTERVAL=30000;
+var FRESHNESS_MIN_INTERVAL=30000;
+var FRESHNESS_VALID_MS=45000;
 
 var host=document.getElementById('plant-auction-universal');
 if(!host)return;
@@ -64,6 +67,87 @@ var detailRetryTimer=null;
 var detailSlowTimer=null;
 var detailRetryCount=0;
 var expiredDetailTarget='';
+var freshnessInfo=null;
+var freshnessCheckedAt=0;
+var freshnessStartedAt=-FRESHNESS_MIN_INTERVAL;
+var freshnessInFlight=false;
+var freshnessTimer=null;
+
+function freshnessCondition(){
+  var data=mode==='detail'?last:lastCatalog;
+  if(!data)return'loading';
+  if(!freshnessInfo||Date.now()-freshnessCheckedAt>FRESHNESS_VALID_MS)return'unknown';
+  if(freshnessInfo.pending)return'pending';
+  if(!freshnessInfo.confirmedRevision||!data.syncRevision)return'legacy';
+  return data.syncRevision===freshnessInfo.confirmedRevision?'confirmed':'outdated';
+}
+
+function updateFreshnessNotice(){
+  var condition=freshnessCondition();
+  var node=document.getElementById('pa-freshness');
+  if(condition==='confirmed'||condition==='loading'){
+    if(node&&node.parentNode)node.parentNode.removeChild(node);
+    return;
+  }
+  if(!node){
+    node=document.createElement('div');
+    node.id='pa-freshness';
+    node.className='pa-notice pa-warn';
+    node.setAttribute('role','status');
+    app.insertBefore(node,app.firstChild);
+  }
+  node.textContent=condition==='pending'||condition==='outdated'
+    ?'Данные обновляются. Показана последняя загруженная версия.'
+    :'Актуальность данных пока не подтверждена. Проверка повторится автоматически.';
+}
+
+function validateFreshnessInfo(data){
+  return !!(data&&data.ok===true&&data.syncSchema===1&&
+    data.kind===(mode==='detail'?'detail':'catalog')&&
+    data.auctionId===(mode==='detail'?aid:'')&&
+    typeof data.confirmedRevision==='string'&&data.confirmedRevision.length<=128&&
+    typeof data.pending==='boolean');
+}
+
+function checkFreshness(){
+  if(freshnessInFlight||Date.now()-freshnessStartedAt<FRESHNESS_MIN_INTERVAL)return;
+  if(mode==='detail'&&!/^[A-Za-z0-9_-]{1,64}$/.test(aid))return;
+  freshnessInFlight=true;
+  freshnessStartedAt=Date.now();
+  var params={action:'syncstate'};
+  if(mode==='detail')params.auction=aid;
+  jsonp(params,function(data){
+    freshnessInFlight=false;
+    freshnessInfo=validateFreshnessInfo(data)?data:null;
+    freshnessCheckedAt=Date.now();
+    updateFreshnessNotice();
+    var condition=freshnessCondition();
+    if(condition!=='confirmed'&&condition!=='loading'){
+      // This independent check also runs after archive has stopped its normal poll.
+      if(mode==='detail')requestDetail();
+      else refreshCatalog();
+    }
+  },function(){
+    freshnessInFlight=false;
+    freshnessInfo=null;
+    freshnessCheckedAt=Date.now();
+    updateFreshnessNotice();
+    if(mode==='detail')requestDetail();
+    else refreshCatalog();
+  });
+}
+
+function startFreshnessChecks(){
+  updateFreshnessNotice();
+  checkFreshness();
+  if(!freshnessTimer){
+    freshnessTimer=setInterval(function(){
+      updateFreshnessNotice();
+      checkFreshness();
+    },FRESHNESS_INTERVAL);
+  }
+}
+
 
 function esc(v){
   return String(v==null?'':v)
@@ -383,6 +467,7 @@ function renderCatalog(d){
     sec('active','Идёт сейчас')+
     sec('upcoming','Скоро')+
     sec('archive','Архив');
+  updateFreshnessNotice();
 }
 
 function readCat(){
@@ -814,6 +899,8 @@ function handleDetailSuccess(d){
   }
 
   detailRetryCount=0;
+  updateFreshnessNotice();
+  checkFreshness();
 }
 
 function requestDetailLegacy(){
@@ -843,6 +930,9 @@ function requestDetail(){
     PUBLIC_STATE+'/'+encodeURIComponent(aid)+'.json?_='+Date.now(),
     function(snapshot){
       if(snapshot&&snapshot.data){
+        if(snapshot.syncRevision!==snapshot.data.syncRevision){
+          snapshot.data.syncRevision="";
+        }
         handleDetailSuccess(snapshot.data);
         return;
       }
@@ -914,6 +1004,7 @@ function loadDetail(){
     try{
       renderDetail(c);
       last=c;
+      updateFreshnessNotice();
     }catch(e){
       try{localStorage.removeItem(detailKey());}catch(ignore){}
       last=null;
@@ -965,5 +1056,7 @@ if(mode==='catalog'){
   if(cachedCatalog)lastCatalog=cachedCatalog;
   loadDetail();
 }
+
+startFreshnessChecks();
 
 })();
