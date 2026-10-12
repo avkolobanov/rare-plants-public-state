@@ -241,7 +241,7 @@ function syncAuctionLayout(){
         var lowerGap=Math.max(0,footerTop-(lastRect.bottom+scrollTop));
         var baseFirstTop=firstRect.top+scrollTop-currentCatalogGap;
 
-        catalogTopGap=Math.max(0,headerHeight+lowerGap-baseFirstTop);
+        catalogTopGap=Math.max(0,headerHeight+(lowerGap*.5)-baseFirstTop);
       }
     }
   }
