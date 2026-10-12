@@ -202,6 +202,7 @@ if(!style){
     padding:calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));
   }
   .pa-rules-panel{
+    box-sizing:border-box;
     max-height:calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   }
 }
