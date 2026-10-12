@@ -32,7 +32,10 @@ if(!style){
   style.textContent=`
 #rec4227562401{display:none!important}
 #plant-auction-universal{
-  position:relative;overflow:hidden;padding:24px 20px 34px;
+  --pa-top-offset:clamp(92px,7.3vw,112px);
+  position:relative;overflow:hidden;
+  margin-top:calc(-1 * var(--pa-top-offset));
+  padding:var(--pa-top-offset) 20px 34px;
   background:
     radial-gradient(68% 58% at 8% 4%,rgba(121,201,151,.36) 0%,rgba(121,201,151,0) 68%),
     radial-gradient(58% 56% at 94% 24%,rgba(56,150,137,.28) 0%,rgba(56,150,137,0) 70%),
@@ -156,7 +159,7 @@ if(!style){
 @media(max-width:1000px){.pa-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.pa-group-divider{width:calc((100% - 16px)/6)}}
 @media(max-width:850px) and (min-width:761px){.pa-blitz{grid-template-columns:250px minmax(0,1fr);gap:20px}.pa-blitz .pa-action{grid-column:1/-1;width:100%}}
 @media(max-width:760px){
-  #plant-auction-universal{padding:10px 10px 28px}
+  #plant-auction-universal{--pa-top-offset:clamp(68px,16vw,88px);padding:var(--pa-top-offset) 10px 28px}
   .pa-hero{grid-template-columns:1fr;padding:14px;gap:18px}.pa-info{padding:0 2px}.pa-title{font-size:31px;margin-top:14px}.pa-auction-id{font-size:20px}.pa-desc{font-size:17px;margin-bottom:20px}.pa-dates{font-size:16px}
   .pa-side{grid-template-columns:1fr}.pa-timer{height:90px}.pa-timer-label{font-size:16px}.pa-timer-value{font-size:40px}.pa-action,.pa-btn{height:56px;min-height:56px}
   .pa-blitz{grid-template-columns:1fr;gap:16px;padding:18px}.pa-blitz-left{border-right:0;border-bottom:1px solid rgba(255,255,255,.26);padding:0 0 14px}.pa-blitz .pa-action{width:100%}
