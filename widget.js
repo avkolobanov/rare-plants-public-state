@@ -32,18 +32,26 @@ if(!style){
   style.textContent=`
 #rec4227562401{display:none!important}
 #plant-auction-universal{
-  --pa-top-offset:clamp(92px,7.3vw,112px);
-  position:relative;overflow:hidden;
-  margin-top:calc(-1 * var(--pa-top-offset));
-  padding:var(--pa-top-offset) 20px 34px;
+  --pa-page-top:0px;
+  --pa-content-offset:40px;
+  position:relative;overflow:visible;
+  padding:0 20px 34px;
+  background:transparent;
+}
+#plant-auction-universal:before,
+#plant-auction-universal:after{
+  content:"";position:absolute;left:50%;width:100vw;
+  top:calc(-1 * var(--pa-page-top));bottom:0;
+  transform:translateX(-50%);pointer-events:none;z-index:0;
+}
+#plant-auction-universal:before{
   background:
     radial-gradient(68% 58% at 8% 4%,rgba(121,201,151,.36) 0%,rgba(121,201,151,0) 68%),
     radial-gradient(58% 56% at 94% 24%,rgba(56,150,137,.28) 0%,rgba(56,150,137,0) 70%),
     radial-gradient(62% 54% at 52% 102%,rgba(135,148,82,.24) 0%,rgba(135,148,82,0) 72%),
     linear-gradient(145deg,#183f31 0%,#0c3128 48%,#08251f 100%);
 }
-#plant-auction-universal:before{
-  content:"";position:absolute;inset:-8%;pointer-events:none;z-index:0;
+#plant-auction-universal:after{
   background:
     radial-gradient(ellipse at 23% 34%,rgba(218,255,228,.075),transparent 28%),
     radial-gradient(ellipse at 80% 73%,rgba(167,231,207,.06),transparent 31%),
@@ -55,7 +63,7 @@ if(!style){
   --pa-panel:rgba(7,45,33,.82);--pa-line:rgba(222,245,230,.42);--pa-line-soft:rgba(222,245,230,.18);
   --pa-text:#f4f7f5;--pa-muted:#d6ded9;--pa-muted2:#b8c7c0;--pa-green:#c8ffb8;--pa-gold:#f0cf43;
   --pa-button-h:60px;--pa-button-w:268px;
-  position:relative;z-index:1;max-width:1320px;margin:auto;
+  position:relative;z-index:1;max-width:1320px;margin:auto;padding-top:var(--pa-content-offset);
   font-family:"Tilda Sans","TildaSans",Arial,sans-serif;color:var(--pa-text);line-height:1.4;
 }
 #pa-app a{color:inherit}
@@ -159,7 +167,7 @@ if(!style){
 @media(max-width:1000px){.pa-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.pa-group-divider{width:calc((100% - 16px)/6)}}
 @media(max-width:850px) and (min-width:761px){.pa-blitz{grid-template-columns:250px minmax(0,1fr);gap:20px}.pa-blitz .pa-action{grid-column:1/-1;width:100%}}
 @media(max-width:760px){
-  #plant-auction-universal{--pa-top-offset:clamp(68px,16vw,88px);padding:var(--pa-top-offset) 10px 28px}
+  #plant-auction-universal{padding:0 10px 28px}
   .pa-hero{grid-template-columns:1fr;padding:14px;gap:18px}.pa-info{padding:0 2px}.pa-title{font-size:31px;margin-top:14px}.pa-auction-id{font-size:20px}.pa-desc{font-size:17px;margin-bottom:20px}.pa-dates{font-size:16px}
   .pa-side{grid-template-columns:1fr}.pa-timer{height:90px}.pa-timer-label{font-size:16px}.pa-timer-value{font-size:40px}.pa-action,.pa-btn{height:56px;min-height:56px}
   .pa-blitz{grid-template-columns:1fr;gap:16px;padding:18px}.pa-blitz-left{border-right:0;border-bottom:1px solid rgba(255,255,255,.26);padding:0 0 14px}.pa-blitz .pa-action{width:100%}
@@ -180,6 +188,39 @@ if(!style){
 `;
   document.head.appendChild(style);
 }
+
+var layoutRaf=0;
+function syncAuctionLayout(){
+  var rect=host.getBoundingClientRect();
+  var scrollTop=window.pageYOffset||
+    document.documentElement.scrollTop||
+    document.body.scrollTop||0;
+  var pageTop=Math.max(0,rect.top+scrollTop);
+  var viewportWidth=Math.max(
+    document.documentElement.clientWidth||0,
+    window.innerWidth||0
+  );
+  var targetTop=viewportWidth<=760?
+    Math.max(96,Math.min(108,viewportWidth*.27)):
+    Math.max(100,Math.min(112,viewportWidth*.073));
+  var contentOffset=Math.max(0,targetTop-pageTop);
+
+  host.style.setProperty('--pa-page-top',pageTop.toFixed(2)+'px');
+  host.style.setProperty('--pa-content-offset',contentOffset.toFixed(2)+'px');
+}
+
+function scheduleAuctionLayoutSync(){
+  if(layoutRaf)cancelAnimationFrame(layoutRaf);
+  layoutRaf=requestAnimationFrame(function(){
+    layoutRaf=0;
+    syncAuctionLayout();
+  });
+}
+
+syncAuctionLayout();
+window.addEventListener('resize',scheduleAuctionLayoutSync,{passive:true});
+window.addEventListener('orientationchange',scheduleAuctionLayoutSync,{passive:true});
+window.addEventListener('load',scheduleAuctionLayoutSync,{once:true});
 
 var qs=new URLSearchParams(location.search);
 var aid=(qs.get('auction')||'').trim();
