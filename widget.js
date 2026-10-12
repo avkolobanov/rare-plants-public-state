@@ -196,6 +196,15 @@ if(!style){
   .pa-cuttings{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.pa-cut{grid-template-columns:1fr;gap:10px;padding:10px}.pa-cut-title{white-space:normal;font-size:13px;line-height:1.25;padding:6px 8px;margin:0 0 8px}
   .pa-stats{grid-template-columns:minmax(0,1fr) 72px;column-gap:8px;row-gap:5px;font-size:13px;padding:0 0 0 8px;margin:0 0 10px}.pa-stat-value{padding-left:8px}.pa-cut .pa-action{font-size:14px}
 }
+@media(max-width:850px){
+  .pa-rules-modal{
+    align-items:flex-start;
+    padding:calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));
+  }
+  .pa-rules-panel{
+    max-height:calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  }
+}
 @media(max-width:640px){
   .pa-grid{grid-template-columns:1fr;gap:12px}.pa-group-divider{width:33.333%;margin:18px auto}
   .pa-card-body{padding:15px;min-height:0}.pa-card-title{font-size:22px}.pa-card-description{min-height:0;font-size:15px}.pa-card-action{font-size:16px}
