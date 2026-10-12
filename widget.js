@@ -154,7 +154,21 @@ if(!style){
 .pa-cut .pa-action,.pa-cut .pa-btn{margin-top:auto;width:var(--pa-button-w);max-width:100%;align-self:center}
 .pa-foot{text-align:center;color:rgba(221,234,226,.58);font-size:11px;margin-top:10px}
 
-/* lightbox */
+/* auction rules */
+.pa-rules-modal{position:fixed;inset:0;z-index:2147482900;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.76);padding:28px;font-family:"Tilda Sans","TildaSans",Arial,sans-serif;color:#f4f7f5}
+.pa-rules-modal.open{display:flex}
+.pa-rules-panel{position:relative;width:min(760px,calc(100vw - 40px));max-height:min(84vh,900px);overflow:auto;padding:30px 34px 32px;border:1px solid rgba(222,245,230,.42);border-radius:18px;background:linear-gradient(135deg,rgba(13,61,45,.98),rgba(7,39,30,.98));box-shadow:0 22px 70px rgba(0,0,0,.42)}
+.pa-rules-close{position:absolute;right:14px;top:14px;width:42px;height:42px;padding:0;border:0;background:transparent;cursor:pointer}
+.pa-rules-close:before,.pa-rules-close:after{content:"";position:absolute;left:50%;top:50%;width:24px;height:3px;border-radius:3px;background:#fff;transform-origin:center}
+.pa-rules-close:before{transform:translate(-50%,-50%) rotate(45deg)}.pa-rules-close:after{transform:translate(-50%,-50%) rotate(-45deg)}
+.pa-rules-title{margin:0 54px 24px 0;font-size:30px;line-height:1.15;font-weight:700}
+.pa-rules-section{margin:0 0 20px}.pa-rules-section:last-of-type{margin-bottom:24px}
+.pa-rules-section h3{margin:0 0 6px;font-size:18px;line-height:1.25;font-weight:700;color:#f4f7f5}
+.pa-rules-section p,.pa-rules-acceptance{margin:0;font-size:16px;line-height:1.55;color:#e3ebe6}
+.pa-rules-acceptance{padding-top:20px;border-top:1px solid rgba(222,245,230,.18);font-weight:700}
+.pa-rules-load,.pa-rules-error{padding:34px 0;text-align:center;font-size:16px;color:#e3ebe6}.pa-rules-error{color:#ffd0d0}
+
+ /* lightbox */
 .pa-lightbox{position:fixed;inset:0;z-index:2147483000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.90);padding:28px}
 .pa-lightbox.open{display:flex}.pa-lightbox-stage{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
 .pa-lightbox-frame{position:relative;width:min(86vw,86vh,820px);aspect-ratio:1/1}
@@ -174,6 +188,8 @@ if(!style){
 @media(max-width:850px) and (min-width:761px){.pa-blitz{grid-template-columns:250px minmax(0,1fr);gap:20px}.pa-blitz .pa-action{grid-column:1/-1;width:100%}}
 @media(max-width:760px){
   #plant-auction-universal{padding:0 10px 28px}
+  .pa-rules-modal{padding:12px}.pa-rules-panel{width:100%;max-height:calc(100vh - 24px);padding:24px 20px 26px;border-radius:16px}.pa-rules-title{font-size:25px;margin-right:48px}.pa-rules-section h3{font-size:17px}.pa-rules-section p,.pa-rules-acceptance{font-size:15px}
+
   .pa-hero{grid-template-columns:1fr;padding:14px;gap:18px}.pa-info{padding:0 2px}.pa-title{font-size:31px;margin-top:14px}.pa-auction-id{font-size:20px}.pa-desc{font-size:17px;margin-bottom:20px}.pa-dates{font-size:16px}
   .pa-side{grid-template-columns:1fr}.pa-timer{height:90px}.pa-timer-label{font-size:16px}.pa-timer-value{font-size:40px}.pa-action,.pa-btn{height:56px;min-height:56px}
   .pa-blitz{grid-template-columns:1fr;gap:16px;padding:18px}.pa-blitz-left{border-right:0;border-bottom:1px solid rgba(255,255,255,.26);padding:0 0 14px}.pa-blitz .pa-action{width:100%}
@@ -286,6 +302,11 @@ var lightboxItems=[];
 var lightboxIndex=0;
 var lightboxBodyOverflow='';
 var lightboxTouchStartX=null;
+var rulesEl=null;
+var rulesData=null;
+var rulesLoading=false;
+var rulesBodyOverflow='';
+var rulesReturnFocus=null;
 var freshnessStartedAt=-FRESHNESS_MIN_INTERVAL;
 var freshnessTimer=null;
 
@@ -882,10 +903,110 @@ function notice(a,p){
   return'';
 }
 
+function rulesButton(){
+  return'<button class="pa-action" type="button" data-rules-open="1">Условия аукциона</button>';
+}
+
 function question(a,p){
   return questionAllowed(p)?
     '<button class="pa-action" data-tg="question_'+esc(a.id)+'">Задать вопрос</button>':
     '';
+}
+
+function validateRulesSnapshot(data){
+  if(!data||typeof data!=='object')return{ok:false,error:'Пустой файл условий.'};
+  if(data.schemaVersion!==1)return{ok:false,error:'Неизвестная версия условий.'};
+  if(!String(data.title||'').trim()||!Array.isArray(data.sections)||!data.sections.length){
+    return{ok:false,error:'Некорректная структура условий.'};
+  }
+
+  for(var i=0;i<data.sections.length;i++){
+    var section=data.sections[i];
+    if(!section||!String(section.title||'').trim()||!String(section.text||'').trim()){
+      return{ok:false,error:'Некорректный раздел условий.'};
+    }
+  }
+
+  if(!String(data.acceptance||'').trim())return{ok:false,error:'Отсутствует подтверждение условий.'};
+  return{ok:true,data:data};
+}
+
+function ensureRulesModal(){
+  if(rulesEl&&rulesEl.parentNode)return rulesEl;
+
+  rulesEl=document.createElement('div');
+  rulesEl.className='pa-rules-modal';
+  rulesEl.setAttribute('aria-hidden','true');
+  rulesEl.innerHTML=
+    '<div class="pa-rules-panel" role="dialog" aria-modal="true" aria-labelledby="pa-rules-title">'+
+      '<button class="pa-rules-close" type="button" data-rules-close="1" aria-label="Закрыть"></button>'+
+      '<div class="pa-rules-content"><div class="pa-rules-load">Загружаем условия аукциона...</div></div>'+
+    '</div>';
+
+  document.body.appendChild(rulesEl);
+  return rulesEl;
+}
+
+function renderRules(data){
+  var el=ensureRulesModal();
+  var content=el.querySelector('.pa-rules-content');
+  if(!content)return;
+
+  content.innerHTML=
+    '<h2 class="pa-rules-title" id="pa-rules-title">'+esc(data.title)+'</h2>'+
+    data.sections.map(function(section){
+      return'<section class="pa-rules-section">'+
+        '<h3>'+esc(section.title)+'</h3>'+
+        '<p>'+esc(section.text)+'</p>'+
+      '</section>';
+    }).join('')+
+    '<p class="pa-rules-acceptance">'+esc(data.acceptance)+'</p>';
+}
+
+function openRules(trigger){
+  var el=ensureRulesModal();
+  var content=el.querySelector('.pa-rules-content');
+
+  rulesReturnFocus=trigger||document.activeElement;
+  rulesBodyOverflow=document.body.style.overflow;
+  document.body.style.overflow='hidden';
+  el.classList.add('open');
+  el.setAttribute('aria-hidden','false');
+
+  var close=el.querySelector('[data-rules-close]');
+  if(close)close.focus();
+
+  if(rulesData){
+    renderRules(rulesData);
+    return;
+  }
+
+  if(rulesLoading)return;
+  rulesLoading=true;
+
+  if(content)content.innerHTML='<div class="pa-rules-load">Загружаем условия аукциона...</div>';
+
+  fetchState('auction-rules.json',validateRulesSnapshot,function(data){
+    rulesLoading=false;
+    rulesData=data;
+    renderRules(data);
+  },function(){
+    rulesLoading=false;
+    if(content)content.innerHTML='<div class="pa-rules-error">Не удалось загрузить условия аукциона. Закройте окно и попробуйте ещё раз.</div>';
+  });
+}
+
+function closeRules(){
+  if(!rulesEl||!rulesEl.classList.contains('open'))return;
+  rulesEl.classList.remove('open');
+  rulesEl.setAttribute('aria-hidden','true');
+  document.body.style.overflow=rulesBodyOverflow;
+
+  if(rulesReturnFocus&&rulesReturnFocus.focus){
+    try{rulesReturnFocus.focus();}catch(e){}
+  }
+
+  rulesReturnFocus=null;
 }
 
 function blitz(a,p){
@@ -986,7 +1107,7 @@ function buildDetailView(d){
           '</div>'+
           notice(a,p)+
         '</div>'+
-        '<aside class="pa-side">'+timerMarkup(a,p)+question(a,p)+'</aside>'+
+        '<aside class="pa-side">'+timerMarkup(a,p)+rulesButton()+question(a,p)+'</aside>'+
       '</section>'+
       blitz(a,p)+
       (d.cuttings.length?
@@ -1092,7 +1213,7 @@ function renderDetailPreview(a){
           '</div>'+
           notice(a,p)+
         '</div>'+
-        '<aside class="pa-side">'+timerMarkup(a,p)+question(a,p)+'</aside>'+
+        '<aside class="pa-side">'+timerMarkup(a,p)+rulesButton()+question(a,p)+'</aside>'+
       '</section>'+
       '<div id="pa-detail-progress" class="pa-notice">Предварительные данные. Загружаем подтверждённые данные аукциона…</div>'+
     '</div>';
@@ -1299,6 +1420,25 @@ function loadDetail(){
 }
 
 document.addEventListener('click',function(e){
+  var rulesOpen=e.target.closest('[data-rules-open]');
+  if(rulesOpen){
+    e.preventDefault();
+    openRules(rulesOpen);
+    return;
+  }
+
+  var rulesClose=e.target.closest('[data-rules-close]');
+  if(rulesClose){
+    e.preventDefault();
+    closeRules();
+    return;
+  }
+
+  if(rulesEl&&rulesEl.classList.contains('open')&&e.target===rulesEl){
+    closeRules();
+    return;
+  }
+
   var b=e.target.closest('[data-tg]');
   if(b){
     e.preventDefault();
@@ -1359,6 +1499,14 @@ document.addEventListener('click',function(e){
 });
 
 document.addEventListener('keydown',function(e){
+  if(rulesEl&&rulesEl.classList.contains('open')){
+    if(e.key==='Escape'){
+      e.preventDefault();
+      closeRules();
+    }
+    return;
+  }
+
   if(!lightboxEl||!lightboxEl.classList.contains('open'))return;
 
   if(e.key==='Escape'){
