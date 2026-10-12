@@ -35,6 +35,7 @@ if(!style){
   --pa-page-top:0px;
   --pa-content-offset:40px;
   --pa-footer-gap:0px;
+  --pa-catalog-top-gap:0px;
   position:relative;overflow:visible;
   padding:0 20px 34px;
   background:transparent;
@@ -77,6 +78,7 @@ if(!style){
 }
 
 /* catalog */
+.pa-catalog-view{padding-top:var(--pa-catalog-top-gap)}
 .pa-sec{margin:0}.pa-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
 .pa-group-divider{width:calc((100% - 32px)/9);height:1px;margin:24px auto;background:linear-gradient(90deg,rgba(222,245,230,0),rgba(222,245,230,.42) 26%,rgba(222,245,230,.42) 74%,rgba(222,245,230,0))}
 .pa-card{
@@ -210,17 +212,44 @@ function syncAuctionLayout(){
   var contentOffset=Math.max(0,targetTop-pageTop);
   var footer=document.getElementById('t-footer');
   var footerGap=0;
+  var catalogTopGap=0;
 
   if(footer){
     var footerRect=footer.getBoundingClientRect();
     var hostBottom=rect.bottom+scrollTop;
     var footerTop=footerRect.top+scrollTop;
     footerGap=Math.max(0,footerTop-hostBottom);
+
+    var catalogView=app.querySelector('.pa-catalog-view');
+    var header=document.getElementById('t-header');
+
+    if(catalogView&&header){
+      var cards=catalogView.querySelectorAll('.pa-card');
+
+      if(cards.length){
+        var firstRect=cards[0].getBoundingClientRect();
+        var lastRect=cards[cards.length-1].getBoundingClientRect();
+        var headerRect=header.getBoundingClientRect();
+        var headerArtboard=header.querySelector('.t396__artboard');
+        var headerHeight=Math.max(
+          headerRect.height,
+          headerArtboard?headerArtboard.getBoundingClientRect().height:0
+        );
+        var currentCatalogGap=parseFloat(
+          getComputedStyle(host).getPropertyValue('--pa-catalog-top-gap')
+        )||0;
+        var lowerGap=Math.max(0,footerTop-(lastRect.bottom+scrollTop));
+        var baseFirstTop=firstRect.top+scrollTop-currentCatalogGap;
+
+        catalogTopGap=Math.max(0,headerHeight+lowerGap-baseFirstTop);
+      }
+    }
   }
 
   host.style.setProperty('--pa-page-top',pageTop.toFixed(2)+'px');
   host.style.setProperty('--pa-content-offset',contentOffset.toFixed(2)+'px');
   host.style.setProperty('--pa-footer-gap',footerGap.toFixed(2)+'px');
+  host.style.setProperty('--pa-catalog-top-gap',catalogTopGap.toFixed(2)+'px');
 }
 
 function scheduleAuctionLayoutSync(){
@@ -753,7 +782,8 @@ function renderCatalog(d){
     return'<section class="pa-sec"><div class="pa-grid">'+g[k].map(card).join('')+'</div></section>';
   });
 
-  app.innerHTML=sections.join('<div class="pa-group-divider" aria-hidden="true"></div>');
+  app.innerHTML='<div class="pa-catalog-view">'+sections.join('<div class="pa-group-divider" aria-hidden="true"></div>')+'</div>';
+  scheduleAuctionLayoutSync();
   updateFreshnessNotice();
 }
 
