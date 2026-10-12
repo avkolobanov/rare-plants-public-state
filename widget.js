@@ -180,7 +180,7 @@ if(!style){
 .pa-lightbox-prev{left:14px}.pa-lightbox-prev:before{transform:rotate(45deg)}.pa-lightbox-next{right:14px}.pa-lightbox-next:before{transform:rotate(225deg)}
 
 @media(max-width:1050px){
-  .pa-hero{grid-template-columns:280px minmax(0,1fr)}.pa-side{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  .pa-hero{grid-template-columns:280px minmax(0,1fr)}.pa-side{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}.pa-side.pa-side-rules{grid-template-columns:1fr}
   .pa-timer{height:var(--pa-button-h)}.pa-timer-value{font-size:31px}.pa-timer-label{font-size:13px}
   .pa-blitz{grid-template-columns:300px minmax(0,1fr) 230px}.pa-cut{grid-template-columns:1fr}.pa-cut>.pa-gallery{width:100%}
 }
@@ -1107,7 +1107,7 @@ function buildDetailView(d){
           '</div>'+
           notice(a,p)+
         '</div>'+
-        '<aside class="pa-side">'+timerMarkup(a,p)+rulesButton()+question(a,p)+'</aside>'+
+        '<aside class="pa-side pa-side-rules">'+timerMarkup(a,p)+rulesButton()+question(a,p)+'</aside>'+
       '</section>'+
       blitz(a,p)+
       (d.cuttings.length?
@@ -1213,7 +1213,7 @@ function renderDetailPreview(a){
           '</div>'+
           notice(a,p)+
         '</div>'+
-        '<aside class="pa-side">'+timerMarkup(a,p)+rulesButton()+question(a,p)+'</aside>'+
+        '<aside class="pa-side pa-side-rules">'+timerMarkup(a,p)+rulesButton()+question(a,p)+'</aside>'+
       '</section>'+
       '<div id="pa-detail-progress" class="pa-notice">Предварительные данные. Загружаем подтверждённые данные аукциона…</div>'+
     '</div>';
