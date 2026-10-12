@@ -115,6 +115,8 @@ if(!style){
 
 /* detail */
 .pa-detail{max-width:1320px;margin:auto}
+.pa-back{display:inline-flex;align-items:center;margin:0 0 12px;text-decoration:none!important;color:var(--pa-muted)!important;font-size:15px;line-height:1.3;font-weight:700}
+.pa-back:hover{color:var(--pa-green)!important}
 .pa-hero{display:grid;grid-template-columns:312px minmax(0,1fr) 268px;gap:28px;padding:24px;align-items:start}
 .pa-info{padding-top:2px;min-width:0}
 .pa-title{font-size:42px;line-height:1.06;margin:20px 0 8px;letter-spacing:-.8px;color:var(--pa-text)}
@@ -931,7 +933,7 @@ function buildDetailView(d){
   if(p==='draft'){
     return{
       phase:p,
-      html:'<div class="pa-detail"><div class="pa-notice">Аукцион готовится к публикации.</div><a class="pa-btn primary" href="/auctions">Все аукционы</a></div>'
+      html:'<div class="pa-detail"><a class="pa-back" href="/auctions">← К списку аукционов</a><div class="pa-notice">Аукцион готовится к публикации.</div></div>'
     };
   }
 
@@ -940,6 +942,7 @@ function buildDetailView(d){
 
   var html=
     '<div class="pa-detail">'+
+      '<a class="pa-back" href="/auctions">← К списку аукционов</a>'+
       '<section class="pa-panel pa-hero">'+
         '<div class="pa-hero-gallery">'+gallery(a.mainPhoto,a.photos,'auction',a.plant)+'</div>'+
         '<div class="pa-info">'+
@@ -1045,6 +1048,7 @@ function renderDetailPreview(a){
 
   app.innerHTML=
     '<div class="pa-detail">'+
+      '<a class="pa-back" href="/auctions">← К списку аукционов</a>'+
       '<section class="pa-panel pa-hero">'+
         '<div class="pa-hero-gallery">'+gallery(a.mainPhoto,[],'auction-preview',a.plant)+'</div>'+
         '<div class="pa-info">'+
