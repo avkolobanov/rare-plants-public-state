@@ -69,6 +69,7 @@ if(!style){
 }
 #pa-app a{color:inherit}
 #pa-app button{font:inherit}
+#pa-app .pa-action,#pa-app .pa-btn{font-weight:700}
 .pa-load,.pa-err{text-align:center;padding:20px 0;background:transparent}.pa-err{color:#ffd0d0}
 .pa-panel,.pa-box{
   background:linear-gradient(115deg,rgba(10,55,40,.88),rgba(9,46,35,.76));
