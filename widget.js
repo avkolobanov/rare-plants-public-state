@@ -46,20 +46,8 @@ if(!style){
   top:calc(-1 * var(--pa-page-top));bottom:calc(-1 * var(--pa-footer-gap));
   transform:translateX(-50%);pointer-events:none;z-index:0;
 }
-#plant-auction-universal:before{
-  background:
-    radial-gradient(68% 58% at 8% 4%,rgba(121,201,151,.36) 0%,rgba(121,201,151,0) 68%),
-    radial-gradient(58% 56% at 94% 24%,rgba(56,150,137,.28) 0%,rgba(56,150,137,0) 70%),
-    radial-gradient(62% 54% at 52% 102%,rgba(135,148,82,.24) 0%,rgba(135,148,82,0) 72%),
-    linear-gradient(145deg,#183f31 0%,#0c3128 48%,#08251f 100%);
-}
-#plant-auction-universal:after{
-  background:
-    radial-gradient(ellipse at 23% 34%,rgba(218,255,228,.075),transparent 28%),
-    radial-gradient(ellipse at 80% 73%,rgba(167,231,207,.06),transparent 31%),
-    linear-gradient(118deg,transparent 20%,rgba(178,239,207,.045) 47%,transparent 74%);
-  filter:blur(26px);
-}
+#plant-auction-universal:before{background:#fff}
+#plant-auction-universal:after{background:none;filter:none}
 #pa-app,#pa-app *{box-sizing:border-box}
 #pa-app{
   --pa-panel:rgba(7,45,33,.82);--pa-line:rgba(222,245,230,.42);--pa-line-soft:rgba(222,245,230,.18);
@@ -71,7 +59,7 @@ if(!style){
 #pa-app a{color:inherit}
 #pa-app button{font:inherit}
 #pa-app .pa-action,#pa-app .pa-btn{font-weight:700}
-.pa-load,.pa-err{text-align:center;padding:20px 0;background:transparent}.pa-err{color:#ffd0d0}
+.pa-load,.pa-err{text-align:center;padding:20px 0;background:transparent;color:#0c3128}.pa-err{color:#8b1e1e}
 .pa-panel,.pa-box{
   background:linear-gradient(115deg,rgba(10,55,40,.88),rgba(9,46,35,.76));
   border:1px solid var(--pa-line);border-radius:18px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)
@@ -80,7 +68,7 @@ if(!style){
 /* catalog */
 .pa-catalog-view{padding-top:var(--pa-catalog-top-gap)}
 .pa-sec{margin:0}.pa-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
-.pa-group-divider{width:calc((100% - 32px)/9);height:1px;margin:24px auto;background:linear-gradient(90deg,rgba(222,245,230,0),rgba(222,245,230,.42) 26%,rgba(222,245,230,.42) 74%,rgba(222,245,230,0))}
+.pa-group-divider{width:calc((100% - 32px)/9);height:1px;margin:24px auto;background:linear-gradient(90deg,rgba(12,49,40,0),rgba(12,49,40,.32) 26%,rgba(12,49,40,.32) 74%,rgba(12,49,40,0))}
 .pa-card{
   min-width:0;overflow:hidden;text-decoration:none!important;color:inherit!important;
   background:linear-gradient(135deg,rgba(18,66,49,.74),rgba(10,48,36,.62));
@@ -117,8 +105,8 @@ if(!style){
 
 /* detail */
 .pa-detail{max-width:1320px;margin:auto}
-.pa-back{display:inline-flex;align-items:center;margin:0 0 12px;text-decoration:none!important;color:var(--pa-muted)!important;font-size:15px;line-height:1.3;font-weight:700}
-.pa-back:hover{color:var(--pa-green)!important}
+.pa-back{display:inline-flex;align-items:center;margin:0 0 12px;text-decoration:none!important;color:#0c3128!important;font-size:15px;line-height:1.3;font-weight:700}
+.pa-back:hover{color:#183f31!important}
 .pa-hero{display:grid;grid-template-columns:312px minmax(0,1fr) 268px;gap:28px;padding:24px;align-items:start}
 .pa-info{padding-top:2px;min-width:0}
 .pa-title{font-size:42px;line-height:1.06;margin:20px 0 8px;letter-spacing:-.8px;color:var(--pa-text)}
@@ -152,7 +140,7 @@ if(!style){
 .pa-stats{display:grid;grid-template-columns:minmax(145px,1fr) minmax(92px,.72fr);column-gap:18px;row-gap:9px;font-size:17px;padding:0 0 0 14px;margin:0 0 14px}
 .pa-stat-label{text-align:left;color:#eef2f0}.pa-stat-value{text-align:left;font-weight:700;border-left:1px solid rgba(255,255,255,.22);padding-left:18px;font-variant-numeric:tabular-nums}
 .pa-cut .pa-action,.pa-cut .pa-btn{margin-top:auto;width:var(--pa-button-w);max-width:100%;align-self:center}
-.pa-foot{text-align:center;color:rgba(221,234,226,.58);font-size:11px;margin-top:10px}
+.pa-foot{text-align:center;color:rgba(12,49,40,.62);font-size:11px;margin-top:10px}
 
 /* auction rules */
 .pa-rules-modal{position:fixed;inset:0;z-index:2147482900;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.76);padding:28px;font-family:"Tilda Sans","TildaSans",Arial,sans-serif;color:#f4f7f5}
