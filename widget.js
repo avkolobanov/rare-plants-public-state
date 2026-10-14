@@ -289,6 +289,7 @@ var catalogTimer=null;
 var catalogRefreshInFlight=false;
 var cbn=0;
 var last=null;
+var stateFetchGeneration=Object.create(null);
 var lastCatalog=null;
 var activeDetailRequests=0;
 var detailRetryTimer=null;
@@ -556,38 +557,60 @@ function fetchJson(url,ok,fail){
   };
 }
 
-function fetchState(path,validate,ok,fail){
-  var done=false;
+function newerStaticState(candidate,current){
+  if(!current)return true;
+  var nextTime=Date.parse(candidate&&candidate.updatedAt);
+  var oldTime=Date.parse(current&&current.updatedAt);
+  if(isFinite(nextTime)&&isFinite(oldTime)){
+    if(nextTime!==oldTime)return nextTime>oldTime;
+  }
+  // Revision timestamps break equal-time ties. Random suffixes have no order.
+  var nextRevision=/^(\d+):/.exec(String(candidate&&candidate.syncRevision||''));
+  var oldRevision=/^(\d+):/.exec(String(current&&current.syncRevision||''));
+  return !!(nextRevision&&oldRevision&&Number.isSafeInteger(Number(nextRevision[1]))&&
+    Number.isSafeInteger(Number(oldRevision[1]))&&Number(nextRevision[1])>Number(oldRevision[1]));
+}
+
+function fetchState(path,validate,ok,fail,complete){
   var remaining=2;
   var errors=[];
-  var cancel=[];
+  var delivered=false;
+  var best=null;
+  var generation=(stateFetchGeneration[path]||0)+1;
+  stateFetchGeneration[path]=generation;
   var stamp=Date.now();
   var urls=[PUBLIC_STATE,PUBLIC_STATE_RAW];
-
-  function rejected(error){
-    if(done)return;
-    errors.push(error);
+  function current(){return stateFetchGeneration[path]===generation;}
+  function settled(){
     remaining--;
-    if(remaining)return;
-    done=true;
-    fail({type:'transport',missing:errors.every(function(e){return e&&e.status===404;}),
-      message:'Не удалось загрузить данные из статических источников.'});
+    if(remaining||!current())return;
+    if(complete)complete();
+    if(delivered)return;
+    var significant=errors.filter(function(e){return e&&e.type&&e.type!=='transport';})[0];
+    fail({type:significant?significant.type:'transport',
+      missing:errors.length===2&&errors.every(function(e){return e&&e.status===404;}),
+      message:significant?significant.message:'Не удалось загрузить данные из статических источников.'});
   }
-
   urls.forEach(function(base){
-    cancel.push(fetchJson(base+'/'+path+'?_='+stamp,function(data){
-      if(done)return;
+    fetchJson(base+'/'+path+'?_='+stamp,function(data){
+      if(!current()){settled();return;}
       try{
         var accepted=validate(data);
-        if(!accepted.ok)throw new Error(accepted.error||'Некорректный снимок.');
-        done=true;
-        cancel.forEach(function(stop){if(stop)stop();});
-        ok(accepted.data);
-      }catch(error){
-        if(!done)rejected(error);
-        else throw error;
-      }
-    },rejected));
+        if(!accepted.ok){errors.push({type:'data',message:accepted.error||'Некорректный снимок.'});}
+        else if(newerStaticState(accepted.data,best)){
+          // The first render is immediate. Keep the other request alive so a
+          // newer snapshot can replace an unchanged cached answer.
+          var result=ok(accepted.data);
+          if(result===false||(result&&result.ok===false)){
+            errors.push({type:result&&result.type||'render',message:result&&result.message||'Не удалось отобразить снимок.'});
+          }else{
+            delivered=true;
+            best=accepted.data;
+          }
+        }
+      }catch(error){errors.push({type:'render',message:error&&error.message||String(error)});}
+      settled();
+    },function(error){if(current())errors.push(error);settled();});
   });
 }
 
@@ -825,13 +848,18 @@ function refreshCatalog(){
   if(catalogRefreshInFlight)return;
   catalogRefreshInFlight=true;
   fetchState('catalog.json',validateCatalogSnapshot,function(d){
-    catalogRefreshInFlight=false;
-    renderCatalog(d);
-    saveCat(d);
+    var previous=lastCatalog;
+    try{
+      renderCatalog(d);
+      saveCat(d);
+      return{ok:true};
+    }catch(error){
+      lastCatalog=previous;
+      return{ok:false,type:'render',message:error&&error.message||String(error)};
+    }
   },function(){
-    catalogRefreshInFlight=false;
     if(!lastCatalog)app.innerHTML='<div class="pa-err">Не удалось загрузить список аукционов.</div>';
-  });
+  },function(){catalogRefreshInFlight=false;});
 }
 
 function loadCatalog(){
@@ -1286,31 +1314,32 @@ function scheduleDetailRetry(){
   },DETAIL_RETRY_DELAY);
 }
 
-function handleDetailSuccess(d){
-  activeDetailRequests=0;
-  clearDetailLoadTimers();
-
-  if(!d||d.ok!==true){
-    detailProgress('Ошибка сервера: '+String(d&&d.error?d.error:'неизвестная ошибка.'),true);
-    scheduleDetailRetry();
-    return;
-  }
-
+function handleDetailStaticData(d){
+  if(!d||d.ok!==true)return{ok:false,type:'api',message:String(d&&d.error||'неизвестная ошибка.')};
   var r=acceptDetail(d);
-
   if(!r.ok){
-    if(r.type==='stale')return;
-    detailProgress((r.type==='render'?'Ошибка отображения: ':'Ошибка данных: ')+r.message,true);
-    scheduleDetailRetry();
-    return;
+    if(r.type!=='stale')detailProgress((r.type==='render'?'Ошибка отображения: ':'Ошибка данных: ')+r.message,true);
+    return r;
   }
-
   detailRetryCount=0;
   updateFreshnessNotice();
   checkFreshness();
+  return{ok:true};
+}
+
+function handleDetailSuccess(d){
+  // Legacy draft API has only one request, so it owns its completion here.
+  activeDetailRequests=0;
+  clearDetailLoadTimers();
+  var result=handleDetailStaticData(d);
+  if(!result.ok&&result.type!=='stale'){
+    if(result.type==='api')detailProgress('Ошибка сервера: '+result.message,true);
+    scheduleDetailRetry();
+  }
 }
 
 function requestDetailLegacy(){
+  activeDetailRequests=1;
   jsonp(
     {auction:aid},
     handleDetailSuccess,
@@ -1328,14 +1357,13 @@ function requestDetail(){
   activeDetailRequests=1;
   freshnessStartedAt=Date.now();
   clearDetailLoadTimers();
-  fetchState(encodeURIComponent(aid)+'.json',validateDetailSnapshot,handleDetailSuccess,function(error){
+  fetchState(encodeURIComponent(aid)+'.json',validateDetailSnapshot,handleDetailStaticData,function(error){
     // Drafts have no published snapshot yet. Only two explicit 404s may use
     // the existing direct-link API; timeout/invalid data never starts JSONP.
     if(error.missing&&!last){requestDetailLegacy();return;}
-    activeDetailRequests=0;
-    detailProgress('Ошибка связи: '+error.message,true);
+    detailProgress((error.type==='render'?'Ошибка отображения: ':error.type==='data'?'Ошибка данных: ':'Ошибка связи: ')+error.message,true);
     scheduleDetailRetry();
-  });
+  },function(){activeDetailRequests=0;});
 }
 
 function startDetailLoadCycle(){
