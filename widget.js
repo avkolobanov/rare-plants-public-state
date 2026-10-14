@@ -29,32 +29,255 @@ var style=document.getElementById('plant-auction-full-styles');
 if(!style){
   style=document.createElement('style');
   style.id='plant-auction-full-styles';
-  style.textContent=[
-    '#rec4227562401{display:none!important}',
-    '#pa-app,#pa-app *{box-sizing:border-box}',
-    '#pa-app{max-width:1120px;margin:auto;font-family:Arial,sans-serif;color:#222;line-height:1.4}',
-    '#pa-app a{color:inherit}',
-    '.pa-load,.pa-err{text-align:center;padding:20px 0;background:transparent}.pa-err{color:#8c1f1f}',
-    '.pa-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.pa-sec{margin:0 0 30px}.pa-sec h2{font-size:26px;margin:0 0 14px}',
-    '.pa-card,.pa-box,.pa-cut{background:#fff;border:1px solid #ddd;border-radius:16px;overflow:hidden}.pa-card{display:flex;flex-direction:column;text-decoration:none!important}',
-    '.pa-img{position:relative;aspect-ratio:4/3;background:#f1f1f1;display:flex;align-items:center;justify-content:center;color:#888;overflow:hidden}.pa-img img{width:100%;height:100%;object-fit:cover;display:block}',
-    '.pa-badge{display:inline-block;padding:6px 10px;border-radius:999px;background:#eee;font-size:12px;font-weight:700}.pa-img .pa-badge{position:absolute;left:10px;top:10px;background:rgba(255,255,255,.94)}',
-    '.pa-active{background:#dff3e4;color:#17662c}.pa-upcoming{background:#e7efff;color:#274f93}.pa-reserve{background:#fff0c7;color:#735200}',
-    '.pa-card-body,.pa-box-body,.pa-cut-body{padding:16px}.pa-card h3,.pa-cut h3{margin:0 0 6px}.pa-muted{color:#777;font-size:13px}.pa-meta{margin-top:12px;padding-top:10px;border-top:1px solid #eee;font-size:13px}.pa-row{display:flex;justify-content:space-between;gap:12px;padding:3px 0}.pa-row b{text-align:right}',
-    '.pa-detail{max-width:900px;margin:auto}.pa-back{display:inline-block;margin-bottom:14px;font-weight:700;text-decoration:none!important}.pa-box{margin-bottom:16px}.pa-main{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:20px;padding:18px}.pa-title{margin:8px 0;font-size:30px}.pa-desc{white-space:pre-line;color:#444;margin:10px 0}',
-    '.pa-notice{margin-top:12px;padding:12px;border-radius:10px;background:#f4f4f4}.pa-ok{background:#e7f6eb;color:#17662c}.pa-warn{background:#fff4d9;color:#674d00}.pa-count{margin-top:8px;font-weight:700}',
-    '.pa-btn{display:flex;width:100%;min-height:44px;margin-top:12px;padding:11px 14px;border:0;border-radius:10px;align-items:center;justify-content:center;background:#217a3c;color:#fff!important;font:inherit;font-weight:700;text-decoration:none!important;cursor:pointer}.pa-btn.dark{background:#222}.pa-btn.secondary{background:#edf0ed;color:#222!important}.pa-btn.off{background:#ddd;color:#777!important;pointer-events:none}',
-    '.pa-cuttings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.pa-cut{display:grid;grid-template-columns:minmax(160px,.75fr) minmax(0,1.25fr)}.pa-cut .pa-img{border-radius:0}.pa-gallery-thumbs{display:flex;gap:6px;overflow:auto;padding-top:6px}.pa-thumb{width:70px;height:54px;border:1px solid #ddd;border-radius:8px;padding:0;overflow:hidden;background:#eee}.pa-thumb img{width:100%;height:100%;object-fit:cover}.pa-foot{text-align:center;color:#999;font-size:11px;margin-top:10px}',
-    '.pa-gallery .pa-img{cursor:zoom-in}.pa-thumb{cursor:pointer}.pa-thumb.is-active{outline:2px solid #217a3c;outline-offset:1px}',
-    '.pa-lightbox{position:fixed;inset:0;z-index:2147483000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.92);padding:24px}.pa-lightbox.open{display:flex}',
-    '.pa-lightbox-stage{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center}.pa-lightbox-img{display:block;max-width:calc(100vw - 120px);max-height:calc(100vh - 64px);width:auto;height:auto;object-fit:contain;user-select:none;-webkit-user-select:none}',
-    '.pa-lightbox-close,.pa-lightbox-prev,.pa-lightbox-next{position:absolute;z-index:2;border:0;background:rgba(0,0,0,.48);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:Arial,sans-serif}.pa-lightbox-close{right:8px;top:8px;width:44px;height:44px;border-radius:50%;font-size:30px;line-height:1}.pa-lightbox-prev,.pa-lightbox-next{top:50%;transform:translateY(-50%);width:52px;height:64px;border-radius:12px;font-size:34px}.pa-lightbox-prev{left:8px}.pa-lightbox-next{right:8px}',
-    '@media(max-width:640px){.pa-lightbox{padding:12px}.pa-lightbox-img{max-width:100%;max-height:calc(100vh - 40px)}.pa-lightbox-prev,.pa-lightbox-next{width:44px;height:56px}.pa-lightbox-prev{left:0}.pa-lightbox-next{right:0}.pa-lightbox-close{right:0;top:0}}',
-    '@media(max-width:900px){.pa-grid{grid-template-columns:repeat(2,1fr)}.pa-main,.pa-cut{grid-template-columns:1fr}}',
-    '@media(max-width:640px){.pa-grid,.pa-cuttings{grid-template-columns:1fr}.pa-title{font-size:25px}.pa-sec h2{font-size:22px}}'
-  ].join('');
+  style.textContent=`
+#rec4227562401{display:none!important}
+#plant-auction-universal{
+  --pa-page-top:0px;
+  --pa-content-offset:40px;
+  --pa-footer-gap:0px;
+  --pa-catalog-top-gap:0px;
+  position:relative;overflow:visible;
+  padding:0 20px 34px;
+  background:transparent;
+}
+#plant-auction-universal:before,
+#plant-auction-universal:after{
+  content:"";position:absolute;left:50%;width:100vw;
+  top:calc(-1 * var(--pa-page-top));bottom:calc(-1 * var(--pa-footer-gap));
+  transform:translateX(-50%);pointer-events:none;z-index:0;
+}
+#plant-auction-universal:before{background:#fff}
+#plant-auction-universal:after{background:none;filter:none}
+#pa-app,#pa-app *{box-sizing:border-box}
+#pa-app{
+  --pa-panel:rgba(7,45,33,.82);--pa-line:rgba(222,245,230,.42);--pa-line-soft:rgba(222,245,230,.18);
+  --pa-text:#f4f7f5;--pa-muted:#d6ded9;--pa-muted2:#b8c7c0;--pa-green:#c8ffb8;--pa-gold:#f0cf43;
+  --pa-button-h:60px;--pa-button-w:268px;
+  position:relative;z-index:1;max-width:1320px;margin:auto;padding-top:var(--pa-content-offset);
+  font-family:"Tilda Sans","TildaSans",Arial,sans-serif;color:var(--pa-text);line-height:1.4;
+}
+#pa-app a{color:inherit}
+#pa-app button{font:inherit}
+#pa-app .pa-action,#pa-app .pa-btn{font-weight:700}
+.pa-load,.pa-err{text-align:center;padding:20px 0;background:transparent;color:#0c3128}.pa-err{color:#8b1e1e}
+.pa-panel,.pa-box{
+  background:linear-gradient(115deg,rgba(10,55,40,.88),rgba(9,46,35,.76));
+  border:1px solid var(--pa-line);border-radius:18px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)
+}
+
+/* catalog */
+.pa-catalog-view{padding-top:var(--pa-catalog-top-gap)}
+.pa-sec{margin:0}.pa-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.pa-group-divider{width:calc((100% - 32px)/9);height:1px;margin:24px auto;background:linear-gradient(90deg,rgba(12,49,40,0),rgba(12,49,40,.32) 26%,rgba(12,49,40,.32) 74%,rgba(12,49,40,0))}
+.pa-card{
+  min-width:0;overflow:hidden;text-decoration:none!important;color:inherit!important;
+  background:linear-gradient(135deg,rgba(18,66,49,.74),rgba(10,48,36,.62));
+  border:1px solid var(--pa-line-soft);border-radius:18px;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  display:flex;flex-direction:column;transition:transform .16s ease,border-color .16s ease,background .16s ease
+}
+.pa-card:hover{transform:translateY(-2px);border-color:rgba(222,245,230,.36);background:linear-gradient(135deg,rgba(20,72,53,.78),rgba(11,52,39,.66))}
+.pa-card>.pa-img{border-bottom:1px solid var(--pa-line-soft)}
+.pa-card-body{padding:18px;display:flex;flex-direction:column;flex:1;min-height:268px}
+.pa-card-title{margin:0 0 5px;font-size:24px;line-height:1.15;font-weight:700;letter-spacing:-.25px}
+.pa-card-id{font-size:15px;color:var(--pa-muted2);margin-bottom:13px}
+.pa-card-description{font-size:16px;line-height:1.38;color:#e0e7e3;margin:0 0 17px;min-height:44px;white-space:pre-line}
+.pa-card-meta{margin-top:auto;padding-top:14px;border-top:1px solid var(--pa-line-soft)}
+.pa-card-row{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;margin-bottom:14px;font-size:14px;color:var(--pa-muted)}
+.pa-card-row b{justify-self:end;color:#f0f5f2;font-size:14px;font-weight:700;text-align:right}
+.pa-card-action{display:flex;align-items:center;justify-content:flex-end;gap:8px;width:100%;text-align:right;color:var(--pa-green);font-size:17px;font-weight:700;line-height:1.25}
+.pa-card-action-arrow{font-size:21px;line-height:1;font-weight:700;transform:translateY(-1px)}
+
+/* common image + badges */
+.pa-img{position:relative;aspect-ratio:1/1;background:rgba(5,31,24,.78);display:flex;align-items:center;justify-content:center;color:rgba(232,242,236,.56);overflow:hidden}
+.pa-img img{width:100%;height:100%;object-fit:cover;display:block}
+.pa-badge{display:inline-flex;align-items:center;gap:8px;padding:7px 13px;border-radius:999px;border:1px solid rgba(255,255,255,.24);background:rgba(7,40,31,.72);font-size:13px;font-weight:700;color:#eef5f1;backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
+.pa-badge:before{content:"";width:8px;height:8px;border-radius:50%;background:#aebdb6}
+.pa-img>.pa-badge{position:absolute;left:14px;top:14px}
+.pa-active:before{background:#00e94b;box-shadow:0 0 9px rgba(0,233,75,.58)}
+.pa-upcoming:before{background:var(--pa-green);box-shadow:0 0 8px rgba(200,255,184,.36)}
+.pa-reserve:before{background:#f0cf43;box-shadow:0 0 8px rgba(240,207,67,.38)}
+.pa-ending:before{background:#e7b85b}.pa-archive{color:#e0e7e3;background:rgba(8,38,30,.76)}
+.pa-gallery{min-width:0}.pa-gallery>.pa-img{border-radius:12px;border:1px solid rgba(255,255,255,.40);cursor:zoom-in}
+.pa-gallery-thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.pa-thumb{aspect-ratio:1/1;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.24);background:#11392a;padding:0;cursor:pointer}
+.pa-thumb img{width:100%;height:100%;object-fit:cover;display:block}.pa-thumb.is-active{outline:2px solid var(--pa-green);outline-offset:1px}
+
+/* detail */
+.pa-detail{max-width:1320px;margin:auto}
+.pa-back{display:inline-flex;align-items:center;margin:0 0 12px;text-decoration:none!important;color:#0c3128!important;font-size:15px;line-height:1.3;font-weight:700}
+.pa-back:hover{color:#183f31!important}
+.pa-hero{display:grid;grid-template-columns:312px minmax(0,1fr) 268px;gap:28px;padding:24px;align-items:start}
+.pa-info{padding-top:2px;min-width:0}
+.pa-title{font-size:42px;line-height:1.06;margin:20px 0 8px;letter-spacing:-.8px;color:var(--pa-text)}
+.pa-auction-id{font-size:25px;color:#e1e7e3;margin-bottom:14px}
+.pa-desc{font-size:21px;line-height:1.35;color:#e2e9e5;margin:0 0 28px;max-width:720px;white-space:pre-line}
+.pa-dates{display:grid;gap:14px;font-size:19px;color:#e7ede9}
+.pa-date-row{display:flex;gap:14px;align-items:center}
+.pa-calendar{width:26px;height:26px;border:2px solid currentColor;border-radius:4px;position:relative;flex:0 0 auto}
+.pa-calendar:before{content:"";position:absolute;left:3px;right:3px;top:6px;border-top:2px solid currentColor}
+.pa-calendar:after{content:"";position:absolute;left:6px;right:6px;top:-5px;height:8px;border-left:2px solid currentColor;border-right:2px solid currentColor}
+.pa-side{display:flex;flex-direction:column;align-items:stretch;gap:16px}
+.pa-timer{height:106px;border:1px solid rgba(255,255,255,.18);border-radius:14px;background:rgba(6,38,29,.78);padding:14px 20px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+.pa-timer-label{font-size:18px;color:#e4ebe7;margin-bottom:2px;text-align:center}
+.pa-timer-value{font-size:46px;line-height:1;font-weight:700;color:var(--pa-green);letter-spacing:1px;font-variant-numeric:tabular-nums;text-align:center}
+.pa-action,.pa-btn{width:100%;height:var(--pa-button-h);min-height:var(--pa-button-h);padding:0 22px;border-radius:32px;border:1.5px solid rgba(255,255,255,.72);background:transparent;color:var(--pa-text)!important;font-size:18px;font-weight:700;text-decoration:none!important;cursor:pointer;display:flex;align-items:center;justify-content:center;text-align:center}
+.pa-action.primary,.pa-btn.primary{background:linear-gradient(100deg,var(--pa-green),#c8ffbd);border-color:transparent;color:#061d15!important;font-weight:700}
+.pa-action.off,.pa-btn.off{opacity:.58;cursor:default;pointer-events:none}
+.pa-notice{margin-top:16px;padding:12px 14px;border:1px solid var(--pa-line-soft);border-radius:12px;background:rgba(6,38,29,.54);color:#e7ede9}
+.pa-ok{color:#dfffe7}.pa-warn{color:#ffe7a2}
+.pa-blitz{display:grid;grid-template-columns:340px minmax(0,1fr) var(--pa-button-w);gap:34px;align-items:center;margin-top:16px;padding:20px 24px;border:1.5px solid var(--pa-gold);border-radius:18px;background:linear-gradient(90deg,rgba(20,63,44,.92),rgba(11,48,35,.80));backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.pa-blitz-left{display:flex;align-items:center;gap:22px;border-right:1px solid rgba(255,255,255,.36);padding-right:30px}
+.pa-bolt{font-size:66px;line-height:1;color:#ffd037;filter:drop-shadow(0 0 7px rgba(255,208,55,.30))}
+.pa-blitz-title{font-size:28px;font-weight:700}.pa-blitz-price{font-size:42px;font-weight:700;line-height:1.05}
+.pa-blitz-copy{font-size:19px;color:#e3e9e5;display:grid;gap:12px}
+.pa-payment{display:flex;align-items:center;gap:12px}.pa-clock{width:23px;height:23px;border:2px solid currentColor;border-radius:50%;position:relative;flex:0 0 auto}
+.pa-clock:after{content:"";position:absolute;left:10px;top:4px;width:2px;height:8px;background:currentColor;transform-origin:bottom;transform:rotate(-20deg)}
+.pa-cuttings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}
+.pa-cut{display:grid;grid-template-columns:minmax(220px,46%) minmax(0,1fr);gap:18px;padding:14px;border:1px solid var(--pa-line-soft);border-radius:16px;background:linear-gradient(135deg,rgba(18,66,49,.72),rgba(10,48,36,.58));min-width:0;align-items:stretch}
+.pa-cut>.pa-gallery .pa-img{border-radius:12px}.pa-cut-body{min-width:0;display:flex;flex-direction:column;padding:0}
+.pa-cut-title{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:7px 14px;margin:0 0 12px;color:#eff4f1}
+.pa-stats{display:grid;grid-template-columns:minmax(145px,1fr) minmax(92px,.72fr);column-gap:18px;row-gap:9px;font-size:17px;padding:0 0 0 14px;margin:0 0 14px}
+.pa-stat-label{text-align:left;color:#eef2f0}.pa-stat-value{text-align:left;font-weight:700;border-left:1px solid rgba(255,255,255,.22);padding-left:18px;font-variant-numeric:tabular-nums}
+.pa-cut .pa-action,.pa-cut .pa-btn{margin-top:auto;width:var(--pa-button-w);max-width:100%;align-self:center}
+.pa-foot{text-align:center;color:rgba(12,49,40,.62);font-size:11px;margin-top:10px}
+
+/* auction rules */
+.pa-rules-modal{position:fixed;inset:0;z-index:2147482900;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.76);padding:28px;font-family:"Tilda Sans","TildaSans",Arial,sans-serif;color:#f4f7f5}
+.pa-rules-modal.open{display:flex}
+.pa-rules-panel{position:relative;width:min(760px,calc(100vw - 40px));max-height:min(84vh,900px);overflow:auto;padding:30px 34px 32px;border:1px solid rgba(222,245,230,.42);border-radius:18px;background:linear-gradient(135deg,rgba(13,61,45,.98),rgba(7,39,30,.98));box-shadow:0 22px 70px rgba(0,0,0,.42)}
+.pa-rules-close{position:absolute;right:14px;top:14px;width:42px;height:42px;padding:0;border:0;background:transparent;cursor:pointer}
+.pa-rules-close:before,.pa-rules-close:after{content:"";position:absolute;left:50%;top:50%;width:24px;height:3px;border-radius:3px;background:#fff;transform-origin:center}
+.pa-rules-close:before{transform:translate(-50%,-50%) rotate(45deg)}.pa-rules-close:after{transform:translate(-50%,-50%) rotate(-45deg)}
+.pa-rules-title{margin:0 54px 24px 0;font-size:30px;line-height:1.15;font-weight:700}
+.pa-rules-section{margin:0 0 20px}.pa-rules-section:last-of-type{margin-bottom:24px}
+.pa-rules-section h3{margin:0 0 6px;font-size:18px;line-height:1.25;font-weight:700;color:#f4f7f5}
+.pa-rules-section p,.pa-rules-acceptance{margin:0;font-size:16px;line-height:1.55;color:#e3ebe6}
+.pa-rules-acceptance{padding-top:20px;border-top:1px solid rgba(222,245,230,.18);font-weight:700}
+.pa-rules-load,.pa-rules-error{padding:34px 0;text-align:center;font-size:16px;color:#e3ebe6}.pa-rules-error{color:#ffd0d0}
+
+ /* lightbox */
+.pa-lightbox{position:fixed;inset:0;z-index:2147483000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.90);padding:28px}
+.pa-lightbox.open{display:flex}.pa-lightbox-stage{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.pa-lightbox-frame{position:relative;width:min(86vw,86vh,820px);aspect-ratio:1/1}
+.pa-lightbox-img{display:block;width:100%;height:100%;object-fit:contain;background:#06140f;border-radius:14px;user-select:none;-webkit-user-select:none}
+.pa-lightbox-close,.pa-lightbox-prev,.pa-lightbox-next{position:absolute;z-index:2;width:52px;height:52px;padding:0;border:0;background:transparent;color:#fff;cursor:pointer;display:grid;place-items:center;filter:drop-shadow(0 2px 3px rgba(0,0,0,.72));font-size:0}
+.pa-lightbox-close{right:14px;top:14px}.pa-lightbox-close:before,.pa-lightbox-close:after{content:"";position:absolute;left:50%;top:50%;width:30px;height:4px;border-radius:4px;background:#fff;transform-origin:center}
+.pa-lightbox-close:before{transform:translate(-50%,-50%) rotate(45deg)}.pa-lightbox-close:after{transform:translate(-50%,-50%) rotate(-45deg)}
+.pa-lightbox-prev,.pa-lightbox-next{top:50%;transform:translateY(-50%)}.pa-lightbox-prev:before,.pa-lightbox-next:before{content:"";width:20px;height:20px;border-left:4px solid #fff;border-bottom:4px solid #fff}
+.pa-lightbox-prev{left:14px}.pa-lightbox-prev:before{transform:rotate(45deg)}.pa-lightbox-next{right:14px}.pa-lightbox-next:before{transform:rotate(225deg)}
+
+@media(max-width:1050px){
+  .pa-hero{grid-template-columns:280px minmax(0,1fr)}.pa-side{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}.pa-side.pa-side-rules{grid-template-columns:1fr}
+  .pa-timer{height:var(--pa-button-h)}.pa-timer-value{font-size:31px}.pa-timer-label{font-size:13px}
+  .pa-blitz{grid-template-columns:300px minmax(0,1fr) 230px}.pa-cut{grid-template-columns:1fr}.pa-cut>.pa-gallery{width:100%}
+}
+@media(max-width:1000px){.pa-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.pa-group-divider{width:calc((100% - 16px)/6)}}
+@media(max-width:850px) and (min-width:761px){.pa-blitz{grid-template-columns:250px minmax(0,1fr);gap:20px}.pa-blitz .pa-action{grid-column:1/-1;width:100%}}
+@media(max-width:760px){
+  #plant-auction-universal{padding:0 10px 28px}
+  .pa-rules-modal{padding:12px}.pa-rules-panel{width:100%;max-height:calc(100vh - 24px);padding:24px 20px 26px;border-radius:16px}.pa-rules-title{font-size:25px;margin-right:48px}.pa-rules-section h3{font-size:17px}.pa-rules-section p,.pa-rules-acceptance{font-size:15px}
+
+  .pa-hero{grid-template-columns:1fr;padding:14px;gap:18px}.pa-info{padding:0 2px}.pa-title{font-size:31px;margin-top:14px}.pa-auction-id{font-size:20px}.pa-desc{font-size:17px;margin-bottom:20px}.pa-dates{font-size:16px}
+  .pa-side{grid-template-columns:1fr}.pa-timer{height:90px}.pa-timer-label{font-size:16px}.pa-timer-value{font-size:40px}.pa-action,.pa-btn{height:56px;min-height:56px}
+  .pa-blitz{grid-template-columns:1fr;gap:16px;padding:18px}.pa-blitz-left{border-right:0;border-bottom:1px solid rgba(255,255,255,.26);padding:0 0 14px}.pa-blitz .pa-action{width:100%}
+  .pa-cuttings{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.pa-cut{grid-template-columns:1fr;gap:10px;padding:10px}.pa-cut-title{white-space:normal;font-size:13px;line-height:1.25;padding:6px 8px;margin:0 0 8px}
+  .pa-stats{grid-template-columns:minmax(0,1fr) 72px;column-gap:8px;row-gap:5px;font-size:13px;padding:0 0 0 8px;margin:0 0 10px}.pa-stat-value{padding-left:8px}.pa-cut .pa-action{font-size:14px}
+}
+@media(max-width:850px){
+  .pa-rules-modal{
+    align-items:flex-start;
+    padding:calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));
+  }
+  .pa-rules-panel{
+    box-sizing:border-box;
+    max-height:calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  }
+}
+@media(max-width:640px){
+  .pa-grid{grid-template-columns:1fr;gap:12px}.pa-group-divider{width:33.333%;margin:18px auto}
+  .pa-card-body{padding:15px;min-height:0}.pa-card-title{font-size:22px}.pa-card-description{min-height:0;font-size:15px}.pa-card-action{font-size:16px}
+}
+@media(max-width:540px){
+  #plant-auction-universal{padding-left:6px;padding-right:6px}.pa-hero{padding:10px}.pa-gallery-thumbs{gap:5px;margin-top:7px}
+  .pa-cuttings{gap:8px}.pa-cut{padding:9px;border-radius:14px;gap:9px}.pa-cut-title{font-size:12px;margin-bottom:7px}
+  .pa-stats{grid-template-columns:minmax(0,1fr) 64px;column-gap:6px;row-gap:4px;font-size:12px;margin-bottom:9px}.pa-stat-value{padding-left:6px}.pa-cut .pa-action{font-size:12px}
+  .pa-lightbox{padding:12px}.pa-lightbox-frame{width:min(calc(100vw - 24px),calc(100vh - 24px))}.pa-lightbox-close,.pa-lightbox-prev,.pa-lightbox-next{width:46px;height:46px}.pa-lightbox-prev{left:8px}.pa-lightbox-next{right:8px}.pa-lightbox-close{right:8px;top:8px}
+}
+@media(max-width:350px){.pa-cuttings{grid-template-columns:1fr}.pa-cut-title{font-size:14px}.pa-stats{grid-template-columns:1fr 96px;font-size:14px}.pa-cut .pa-action{font-size:14px}}
+`;
   document.head.appendChild(style);
 }
+
+var layoutRaf=0;
+function syncAuctionLayout(){
+  var rect=host.getBoundingClientRect();
+  var scrollTop=window.pageYOffset||
+    document.documentElement.scrollTop||
+    document.body.scrollTop||0;
+  var pageTop=Math.max(0,rect.top+scrollTop);
+  var viewportWidth=Math.max(
+    document.documentElement.clientWidth||0,
+    window.innerWidth||0
+  );
+  var targetTop=viewportWidth<=760?
+    Math.max(96,Math.min(108,viewportWidth*.27)):
+    Math.max(100,Math.min(112,viewportWidth*.073));
+  var contentOffset=Math.max(0,targetTop-pageTop);
+  var footer=document.getElementById('t-footer');
+  var footerGap=0;
+  var catalogTopGap=0;
+
+  if(footer){
+    var footerRect=footer.getBoundingClientRect();
+    var hostBottom=rect.bottom+scrollTop;
+    var footerTop=footerRect.top+scrollTop;
+    footerGap=Math.max(0,footerTop-hostBottom);
+
+    var catalogView=app.querySelector('.pa-catalog-view');
+    var header=document.getElementById('t-header');
+
+    if(catalogView&&header){
+      var cards=catalogView.querySelectorAll('.pa-card');
+
+      if(cards.length){
+        var firstRect=cards[0].getBoundingClientRect();
+        var lastRect=cards[cards.length-1].getBoundingClientRect();
+        var headerRect=header.getBoundingClientRect();
+        var headerArtboard=header.querySelector('.t396__artboard');
+        var headerHeight=Math.max(
+          headerRect.height,
+          headerArtboard?headerArtboard.getBoundingClientRect().height:0
+        );
+        var currentCatalogGap=parseFloat(
+          getComputedStyle(host).getPropertyValue('--pa-catalog-top-gap')
+        )||0;
+        var lowerGap=Math.max(0,footerTop-(lastRect.bottom+scrollTop));
+        var baseFirstTop=firstRect.top+scrollTop-currentCatalogGap;
+
+        catalogTopGap=Math.max(0,headerHeight+(lowerGap*.5)-baseFirstTop);
+      }
+    }
+  }
+
+  host.style.setProperty('--pa-page-top',pageTop.toFixed(2)+'px');
+  host.style.setProperty('--pa-content-offset',contentOffset.toFixed(2)+'px');
+  host.style.setProperty('--pa-footer-gap',footerGap.toFixed(2)+'px');
+  host.style.setProperty('--pa-catalog-top-gap',catalogTopGap.toFixed(2)+'px');
+}
+
+function scheduleAuctionLayoutSync(){
+  if(layoutRaf)cancelAnimationFrame(layoutRaf);
+  layoutRaf=requestAnimationFrame(function(){
+    layoutRaf=0;
+    syncAuctionLayout();
+  });
+}
+
+syncAuctionLayout();
+window.addEventListener('resize',scheduleAuctionLayoutSync,{passive:true});
+window.addEventListener('orientationchange',scheduleAuctionLayoutSync,{passive:true});
+window.addEventListener('load',scheduleAuctionLayoutSync,{once:true});
 
 var qs=new URLSearchParams(location.search);
 var aid=(qs.get('auction')||'').trim();
@@ -65,7 +288,6 @@ var countTimer=null;
 var catalogTimer=null;
 var catalogRefreshInFlight=false;
 var cbn=0;
-var stateFetchGeneration=Object.create(null);
 var last=null;
 var lastCatalog=null;
 var activeDetailRequests=0;
@@ -78,6 +300,11 @@ var lightboxItems=[];
 var lightboxIndex=0;
 var lightboxBodyOverflow='';
 var lightboxTouchStartX=null;
+var rulesEl=null;
+var rulesData=null;
+var rulesLoading=false;
+var rulesBodyOverflow='';
+var rulesReturnFocus=null;
 var freshnessStartedAt=-FRESHNESS_MIN_INTERVAL;
 var freshnessTimer=null;
 
@@ -128,6 +355,11 @@ function dt(v,tz){
 
 function money(v){
   return v==null||v===''?'—':new Intl.NumberFormat('ru-RU').format(Number(v))+' ₽';
+}
+
+function descriptionText(v){
+  var s=String(v==null?'':v).trim();
+  return /^без описания$/i.test(s)?'':s;
 }
 
 function publicImageUrl(photo){
@@ -208,7 +440,9 @@ function label(p){
 function cls(p){
   return p==='active'?'pa-active':
     p==='upcoming'?'pa-upcoming':
-    p==='reserve'?'pa-reserve':'';
+    p==='reserve'?'pa-reserve':
+    p==='archive'?'pa-archive':
+    p==='ending'?'pa-ending':'';
 }
 
 function questionAllowed(p){
@@ -322,60 +556,38 @@ function fetchJson(url,ok,fail){
   };
 }
 
-function newerStaticState(candidate,current){
-  if(!current)return true;
-  var nextTime=Date.parse(candidate&&candidate.updatedAt);
-  var oldTime=Date.parse(current&&current.updatedAt);
-  if(isFinite(nextTime)&&isFinite(oldTime)){
-    if(nextTime!==oldTime)return nextTime>oldTime;
-  }
-  // Revision timestamps break equal-time ties. Random suffixes have no order.
-  var nextRevision=/^(\d+):/.exec(String(candidate&&candidate.syncRevision||''));
-  var oldRevision=/^(\d+):/.exec(String(current&&current.syncRevision||''));
-  return !!(nextRevision&&oldRevision&&Number.isSafeInteger(Number(nextRevision[1]))&&
-    Number.isSafeInteger(Number(oldRevision[1]))&&Number(nextRevision[1])>Number(oldRevision[1]));
-}
-
-function fetchState(path,validate,ok,fail,complete){
+function fetchState(path,validate,ok,fail){
+  var done=false;
   var remaining=2;
   var errors=[];
-  var delivered=false;
-  var best=null;
-  var generation=(stateFetchGeneration[path]||0)+1;
-  stateFetchGeneration[path]=generation;
+  var cancel=[];
   var stamp=Date.now();
   var urls=[PUBLIC_STATE,PUBLIC_STATE_RAW];
-  function current(){return stateFetchGeneration[path]===generation;}
-  function settled(){
+
+  function rejected(error){
+    if(done)return;
+    errors.push(error);
     remaining--;
-    if(remaining||!current())return;
-    if(complete)complete();
-    if(delivered)return;
-    var significant=errors.filter(function(e){return e&&e.type&&e.type!=='transport';})[0];
-    fail({type:significant?significant.type:'transport',
-      missing:errors.length===2&&errors.every(function(e){return e&&e.status===404;}),
-      message:significant?significant.message:'Не удалось загрузить данные из статических источников.'});
+    if(remaining)return;
+    done=true;
+    fail({type:'transport',missing:errors.every(function(e){return e&&e.status===404;}),
+      message:'Не удалось загрузить данные из статических источников.'});
   }
+
   urls.forEach(function(base){
-    fetchJson(base+'/'+path+'?_='+stamp,function(data){
-      if(!current()){settled();return;}
+    cancel.push(fetchJson(base+'/'+path+'?_='+stamp,function(data){
+      if(done)return;
       try{
         var accepted=validate(data);
-        if(!accepted.ok){errors.push({type:'data',message:accepted.error||'Некорректный снимок.'});}
-        else if(newerStaticState(accepted.data,best)){
-          // The first render is immediate. Keep the other request alive so a
-          // newer snapshot can replace an unchanged cached answer.
-          var result=ok(accepted.data);
-          if(result===false||(result&&result.ok===false)){
-            errors.push({type:result&&result.type||'render',message:result&&result.message||'Не удалось отобразить снимок.'});
-          }else{
-            delivered=true;
-            best=accepted.data;
-          }
-        }
-      }catch(error){errors.push({type:'render',message:error&&error.message||String(error)});}
-      settled();
-    },function(error){if(current())errors.push(error);settled();});
+        if(!accepted.ok)throw new Error(accepted.error||'Некорректный снимок.');
+        done=true;
+        cancel.forEach(function(stop){if(stop)stop();});
+        ok(accepted.data);
+      }catch(error){
+        if(!done)rejected(error);
+        else throw error;
+      }
+    },rejected));
   });
 }
 
@@ -451,10 +663,12 @@ function ensureLightbox(){
   lightboxEl.setAttribute('aria-hidden','true');
   lightboxEl.innerHTML=
     '<div class="pa-lightbox-stage" role="dialog" aria-modal="true" aria-label="Просмотр фотографии">'+
-      '<button class="pa-lightbox-close" type="button" data-lightbox-close="1" aria-label="Закрыть">×</button>'+
-      '<button class="pa-lightbox-prev" type="button" data-lightbox-prev="1" aria-label="Предыдущее фото">‹</button>'+
-      '<img class="pa-lightbox-img" alt="">'+
-      '<button class="pa-lightbox-next" type="button" data-lightbox-next="1" aria-label="Следующее фото">›</button>'+
+      '<div class="pa-lightbox-frame">'+
+        '<button class="pa-lightbox-close" type="button" data-lightbox-close="1" aria-label="Закрыть"></button>'+
+        '<button class="pa-lightbox-prev" type="button" data-lightbox-prev="1" aria-label="Предыдущее фото"></button>'+
+        '<img class="pa-lightbox-img" alt="">'+
+        '<button class="pa-lightbox-next" type="button" data-lightbox-next="1" aria-label="Следующее фото"></button>'+
+      '</div>'+
     '</div>';
 
   document.body.appendChild(lightboxEl);
@@ -552,19 +766,18 @@ function card(x){
   var p=photo?'<img data-pa-img="1" src="'+esc(photo)+'" alt="'+esc(x.plant||'')+'">':'Фото пока нет';
   var dv=x.status==='archive'?x.end:x.status==='upcoming'?x.start:x.end;
   var dl=x.status==='archive'?'Завершён':x.status==='upcoming'?'Начало':'Окончание';
+  var description=descriptionText(x.description);
+  var action=x.status==='archive'?'Посмотреть результаты':'Открыть аукцион';
 
   return'<a class="pa-card" href="/auctions?auction='+encodeURIComponent(x.id)+'">'+
     '<div class="pa-img">'+p+'<span class="pa-badge '+cls(x.status)+'">'+label(x.status)+'</span></div>'+
     '<div class="pa-card-body">'+
-      '<h3>'+esc(x.plant||x.id)+'</h3>'+
-      '<div class="pa-muted">Аукцион '+esc(x.id)+'</div>'+
-      (x.description?'<div>'+esc(x.description)+'</div>':'')+
-      '<div class="pa-meta">'+
-        '<div class="pa-row"><span>'+dl+'</span><b>'+esc(dt(dv,x.timezone))+'</b></div>'+
-        '<div class="pa-row"><span>Черенков</span><b>'+esc(x.cuttingCount||0)+'</b></div>'+
-        '<div style="margin-top:8px;font-weight:700">'+
-          (x.status==='archive'?'Посмотреть результаты →':'Открыть аукцион →')+
-        '</div>'+
+      '<h3 class="pa-card-title">'+esc(x.plant||x.id)+'</h3>'+
+      '<div class="pa-card-id">Аукцион '+esc(x.id)+'</div>'+
+      '<div class="pa-card-description">'+esc(description)+'</div>'+
+      '<div class="pa-card-meta">'+
+        '<div class="pa-card-row"><span>'+dl+'</span><b>'+esc(dt(dv,x.timezone))+'</b></div>'+
+        '<div class="pa-card-action">'+esc(action)+'<span class="pa-card-action-arrow" aria-hidden="true">→</span></div>'+
       '</div>'+
     '</div>'+
   '</a>';
@@ -582,17 +795,14 @@ function renderCatalog(d){
     else g.active.push(x);
   });
 
-  function sec(k,t){
-    return g[k].length?
-      '<section class="pa-sec"><h2>'+t+'</h2><div class="pa-grid">'+g[k].map(card).join('')+'</div></section>':
-      '';
-  }
+  var sections=['active','upcoming','archive'].filter(function(k){
+    return g[k].length;
+  }).map(function(k){
+    return'<section class="pa-sec"><div class="pa-grid">'+g[k].map(card).join('')+'</div></section>';
+  });
 
-  app.innerHTML=
-    '<div class="pa-muted" style="margin-bottom:16px">Опубликованных аукционов: '+d.auctions.length+'</div>'+
-    sec('active','Идёт сейчас')+
-    sec('upcoming','Скоро')+
-    sec('archive','Архив');
+  app.innerHTML='<div class="pa-catalog-view">'+sections.join('<div class="pa-group-divider" aria-hidden="true"></div>')+'</div>';
+  scheduleAuctionLayoutSync();
   updateFreshnessNotice();
 }
 
@@ -615,18 +825,13 @@ function refreshCatalog(){
   if(catalogRefreshInFlight)return;
   catalogRefreshInFlight=true;
   fetchState('catalog.json',validateCatalogSnapshot,function(d){
-    var previous=lastCatalog;
-    try{
-      renderCatalog(d);
-      saveCat(d);
-      return{ok:true};
-    }catch(error){
-      lastCatalog=previous;
-      return{ok:false,type:'render',message:error&&error.message||String(error)};
-    }
+    catalogRefreshInFlight=false;
+    renderCatalog(d);
+    saveCat(d);
   },function(){
+    catalogRefreshInFlight=false;
     if(!lastCatalog)app.innerHTML='<div class="pa-err">Не удалось загрузить список аукционов.</div>';
-  },function(){catalogRefreshInFlight=false;});
+  });
 }
 
 function loadCatalog(){
@@ -673,15 +878,19 @@ function countMarkup(labelText,target){
     '';
 }
 
+function timerMarkup(a,p){
+  var target=p==='upcoming'?a.start:(p==='active'?a.end:'');
+  if(!target)return'';
+  var text=p==='upcoming'?'До начала':'До завершения';
+  return'<div class="pa-timer" data-count="'+esc(target)+'">'+
+    '<div class="pa-timer-label">'+text+'</div>'+
+    '<div class="pa-timer-value"><span>'+esc(countText(target))+'</span></div>'+
+  '</div>';
+}
+
 function notice(a,p){
-  if(p==='upcoming'){
-    return'<div class="pa-notice">Аукцион ещё не начался.'+countMarkup('До начала',a.start)+'</div>';
-  }
-  if(p==='active'){
-    return'<div class="pa-notice pa-ok">Аукцион открыт. Ставки принимаются в Telegram.'+countMarkup('До окончания',a.end)+'</div>';
-  }
   if(p==='reserve'){
-    return'<div class="pa-notice pa-warn">⚡ Всё растение временно зарезервировано по блиц-покупке. Обычные ставки приостановлены.</div>';
+    return'<div class="pa-notice pa-warn">Всё растение временно зарезервировано по блиц-покупке. Обычные ставки приостановлены.</div>';
   }
   if(p==='ending'){
     return'<div class="pa-notice">Время аукциона закончилось. Фиксируем результаты...</div>';
@@ -692,74 +901,175 @@ function notice(a,p){
   return'';
 }
 
+function rulesButton(){
+  return'<button class="pa-action" type="button" data-rules-open="1">Условия аукциона</button>';
+}
+
 function question(a,p){
   return questionAllowed(p)?
-    '<button class="pa-btn secondary" data-tg="question_'+esc(a.id)+'">Задать вопрос</button>':
+    '<button class="pa-action" data-tg="question_'+esc(a.id)+'">Задать вопрос</button>':
     '';
+}
+
+function validateRulesSnapshot(data){
+  if(!data||typeof data!=='object')return{ok:false,error:'Пустой файл условий.'};
+  if(data.schemaVersion!==1)return{ok:false,error:'Неизвестная версия условий.'};
+  if(!String(data.title||'').trim()||!Array.isArray(data.sections)||!data.sections.length){
+    return{ok:false,error:'Некорректная структура условий.'};
+  }
+
+  for(var i=0;i<data.sections.length;i++){
+    var section=data.sections[i];
+    if(!section||!String(section.title||'').trim()||!String(section.text||'').trim()){
+      return{ok:false,error:'Некорректный раздел условий.'};
+    }
+  }
+
+  if(!String(data.acceptance||'').trim())return{ok:false,error:'Отсутствует подтверждение условий.'};
+  return{ok:true,data:data};
+}
+
+function ensureRulesModal(){
+  if(rulesEl&&rulesEl.parentNode)return rulesEl;
+
+  rulesEl=document.createElement('div');
+  rulesEl.className='pa-rules-modal';
+  rulesEl.setAttribute('aria-hidden','true');
+  rulesEl.innerHTML=
+    '<div class="pa-rules-panel" role="dialog" aria-modal="true" aria-labelledby="pa-rules-title">'+
+      '<button class="pa-rules-close" type="button" data-rules-close="1" aria-label="Закрыть"></button>'+
+      '<div class="pa-rules-content"><div class="pa-rules-load">Загружаем условия аукциона...</div></div>'+
+    '</div>';
+
+  document.body.appendChild(rulesEl);
+  return rulesEl;
+}
+
+function renderRules(data){
+  var el=ensureRulesModal();
+  var content=el.querySelector('.pa-rules-content');
+  if(!content)return;
+
+  content.innerHTML=
+    '<h2 class="pa-rules-title" id="pa-rules-title">'+esc(data.title)+'</h2>'+
+    data.sections.map(function(section){
+      return'<section class="pa-rules-section">'+
+        '<h3>'+esc(section.title)+'</h3>'+
+        '<p>'+esc(section.text)+'</p>'+
+      '</section>';
+    }).join('')+
+    '<p class="pa-rules-acceptance">'+esc(data.acceptance)+'</p>';
+}
+
+function openRules(trigger){
+  var el=ensureRulesModal();
+  var content=el.querySelector('.pa-rules-content');
+
+  rulesReturnFocus=trigger||document.activeElement;
+  rulesBodyOverflow=document.body.style.overflow;
+  document.body.style.overflow='hidden';
+  el.classList.add('open');
+  el.setAttribute('aria-hidden','false');
+
+  var close=el.querySelector('[data-rules-close]');
+  if(close)close.focus();
+
+  if(rulesData){
+    renderRules(rulesData);
+    return;
+  }
+
+  if(rulesLoading)return;
+  rulesLoading=true;
+
+  if(content)content.innerHTML='<div class="pa-rules-load">Загружаем условия аукциона...</div>';
+
+  fetchState('auction-rules.json',validateRulesSnapshot,function(data){
+    rulesLoading=false;
+    rulesData=data;
+    renderRules(data);
+  },function(){
+    rulesLoading=false;
+    if(content)content.innerHTML='<div class="pa-rules-error">Не удалось загрузить условия аукциона. Закройте окно и попробуйте ещё раз.</div>';
+  });
+}
+
+function closeRules(){
+  if(!rulesEl||!rulesEl.classList.contains('open'))return;
+  rulesEl.classList.remove('open');
+  rulesEl.setAttribute('aria-hidden','true');
+  document.body.style.overflow=rulesBodyOverflow;
+
+  if(rulesReturnFocus&&rulesReturnFocus.focus){
+    try{rulesReturnFocus.focus();}catch(e){}
+  }
+
+  rulesReturnFocus=null;
 }
 
 function blitz(a,p){
   if(a.blitzSale&&a.blitzSale.sold===true){
-    return'<div class="pa-box"><div class="pa-box-body">'+
-      '<b>⚡ Продано по блицу</b>'+
-      '<div style="font-size:26px;font-weight:700">'+money(a.blitzSale.price)+'</div>'+
-    '</div></div>';
+    return'<section class="pa-blitz">'+
+      '<div class="pa-blitz-left"><div class="pa-bolt">ϟ</div><div><div class="pa-blitz-title">Блиц</div><div class="pa-blitz-price">'+money(a.blitzSale.price)+'</div></div></div>'+
+      '<div class="pa-blitz-copy"><div>Продано по блицу</div></div>'+
+      '<div></div>'+
+    '</section>';
   }
 
   if(p==='archive'||p==='ending')return'';
   if(!a.blitz||!a.blitz.enabled)return'';
 
   var act=p==='active'?
-    '<button class="pa-btn dark" data-tg="blitz_'+esc(a.id)+'">Купить всё растение</button>':
-    '<div class="pa-btn off">'+
+    '<button class="pa-action primary" data-tg="blitz_'+esc(a.id)+'">Купить</button>':
+    '<div class="pa-action off">'+
       (p==='reserve'?'Растение зарезервировано':'Блиц недоступен')+
     '</div>';
 
-  return'<div class="pa-box"><div class="pa-box-body">'+
-    '<b>⚡ Купить всё растение</b>'+
-    '<div style="font-size:26px;font-weight:700">'+money(a.blitz.price)+'</div>'+
-    '<div class="pa-muted">На оплату: '+esc(a.blitz.paymentMinutes)+' мин.</div>'+
+  return'<section class="pa-blitz">'+
+    '<div class="pa-blitz-left"><div class="pa-bolt">ϟ</div><div><div class="pa-blitz-title">Блиц</div><div class="pa-blitz-price">'+money(a.blitz.price)+'</div></div></div>'+
+    '<div class="pa-blitz-copy"><div>Приобрести всё растение сразу</div><div class="pa-payment"><span class="pa-clock"></span><span>На оплату: <strong>'+esc(a.blitz.paymentMinutes)+' мин.</strong></span></div></div>'+
     act+
-  '</div></div>';
+  '</section>';
 }
 
 function cut(x,p,wholeBlitzSold){
   var action=
     p==='active'?
-      '<button class="pa-btn" data-tg="bid_'+esc(x.id)+'">Сделать ставку</button>':
+      '<button class="pa-action primary" data-tg="bid_'+esc(x.id)+'">Сделать ставку</button>':
     p==='reserve'?
-      '<div class="pa-btn off">Ставки на паузе</div>':
+      '<div class="pa-action off">Ставки на паузе</div>':
     p==='upcoming'?
-      '<div class="pa-btn off">Аукцион ещё не начался</div>':
+      '<div class="pa-action off">Аукцион ещё не начался</div>':
       '';
 
-  var result='';
+  var stats=
+    '<span class="pa-stat-label">Старт</span><span class="pa-stat-value">'+money(x.startPrice)+'</span>'+
+    '<span class="pa-stat-label">Шаг</span><span class="pa-stat-value">'+money(x.step)+'</span>'+
+    '<span class="pa-stat-label">Ставок</span><span class="pa-stat-value">'+esc(x.bidCount||0)+'</span>';
 
   if(p==='archive'){
-    if(wholeBlitzSold){
-      result='<div class="pa-row"><span>Результат</span><b>Продан в составе растения</b></div>';
-    }else{
-      result='<div class="pa-row"><span>Результат</span><b>'+
+    stats+=wholeBlitzSold?
+      '<span class="pa-stat-label">Результат</span><span class="pa-stat-value">Продан в составе растения</span>':
+      '<span class="pa-stat-label">Результат</span><span class="pa-stat-value">'+
         (x.sold?'Продан за '+money(x.finalPrice):'Не продан')+
-      '</b></div>';
-    }
+      '</span>';
   }else{
-    result=
-      '<div class="pa-row"><span>Текущая ставка</span><b>'+
+    stats+=
+      '<span class="pa-stat-label">Текущая ставка</span><span class="pa-stat-value">'+
         (x.currentPrice==null?'нет':money(x.currentPrice))+
-      '</b></div>'+
-      '<div class="pa-row"><span>Следующая</span><b>'+money(x.nextBid)+'</b></div>';
+      '</span>'+
+      '<span class="pa-stat-label">Следующая</span><span class="pa-stat-value">'+money(x.nextBid)+'</span>';
   }
 
+  var type=String(x.type||'').trim();
+  var suffix=type&&!/^№?\s*\d+$/i.test(type)?' — '+type:'';
+  var title='Черенок №'+x.number+suffix;
+
   return'<article class="pa-cut">'+
-    gallery(x.mainPhoto,x.photos,'cut-'+x.id,'Черенок №'+x.number)+
+    gallery(x.mainPhoto,x.photos,'cut-'+x.id,title)+
     '<div class="pa-cut-body">'+
-      '<h3>№'+esc(x.number)+' — '+esc(x.type||'Черенок')+'</h3>'+
-      (x.description?'<div class="pa-muted">'+esc(x.description)+'</div>':'')+
-      '<div class="pa-row"><span>Старт</span><b>'+money(x.startPrice)+'</b></div>'+
-      '<div class="pa-row"><span>Шаг</span><b>'+money(x.step)+'</b></div>'+
-      '<div class="pa-row"><span>Ставок</span><b>'+esc(x.bidCount||0)+'</b></div>'+
-      result+
+      '<h3 class="pa-cut-title">'+esc(title)+'</h3>'+
+      '<div class="pa-stats">'+stats+'</div>'+
       action+
     '</div>'+
   '</article>';
@@ -772,30 +1082,31 @@ function buildDetailView(d){
   if(p==='draft'){
     return{
       phase:p,
-      html:'<div class="pa-detail"><div class="pa-notice">Аукцион готовится к публикации.</div><a class="pa-btn" href="/auctions">Все аукционы</a></div>'
+      html:'<div class="pa-detail"><a class="pa-back" href="/auctions">← К списку аукционов</a><div class="pa-notice">Аукцион готовится к публикации.</div></div>'
     };
   }
 
   var wholeBlitzSold=!!(a.blitzSale&&a.blitzSale.sold===true);
+  var description=descriptionText(a.description);
 
   var html=
     '<div class="pa-detail">'+
-      '<a class="pa-back" href="/auctions">← Все аукционы</a>'+
-      '<div class="pa-box">'+
-        '<div class="pa-main">'+
-          '<div>'+gallery(a.mainPhoto,a.photos,'auction',a.plant)+'</div>'+
-          '<div>'+
-            '<span class="pa-badge '+cls(p)+'">'+label(p)+'</span>'+
-            '<h1 class="pa-title">'+esc(a.plant||a.id)+'</h1>'+
-            '<div class="pa-muted">Аукцион '+esc(a.id)+(a.mode?' · '+esc(a.mode):'')+'</div>'+
-            (a.description?'<div class="pa-desc">'+esc(a.description)+'</div>':'')+
-            '<div>Начало: '+esc(dt(a.start,a.timezone))+'</div>'+
-            '<div>Окончание: '+esc(dt(a.end,a.timezone))+'</div>'+
-            notice(a,p)+
-            question(a,p)+
+      '<a class="pa-back" href="/auctions">← К списку аукционов</a>'+
+      '<section class="pa-panel pa-hero">'+
+        '<div class="pa-hero-gallery">'+gallery(a.mainPhoto,a.photos,'auction',a.plant)+'</div>'+
+        '<div class="pa-info">'+
+          '<span class="pa-badge '+cls(p)+'">'+label(p)+'</span>'+
+          '<h1 class="pa-title">'+esc(a.plant||a.id)+'</h1>'+
+          '<div class="pa-auction-id">Аукцион '+esc(a.id)+'</div>'+
+          (description?'<div class="pa-desc">'+esc(description)+'</div>':'')+
+          '<div class="pa-dates">'+
+            '<div class="pa-date-row"><span class="pa-calendar" aria-hidden="true"></span><span>Начало: '+esc(dt(a.start,a.timezone))+'</span></div>'+
+            '<div class="pa-date-row"><span class="pa-calendar" aria-hidden="true"></span><span>Окончание: '+esc(dt(a.end,a.timezone))+'</span></div>'+
           '</div>'+
+          notice(a,p)+
         '</div>'+
-      '</div>'+
+        '<aside class="pa-side pa-side-rules">'+timerMarkup(a,p)+rulesButton()+question(a,p)+'</aside>'+
+      '</section>'+
       blitz(a,p)+
       (d.cuttings.length?
         '<div class="pa-cuttings">'+
@@ -882,25 +1193,26 @@ function catalogAuction(id){
 
 function renderDetailPreview(a){
   var p=catalogPhase(a);
+  var description=descriptionText(a.description);
 
   app.innerHTML=
     '<div class="pa-detail">'+
-      '<a class="pa-back" href="/auctions">← Все аукционы</a>'+
-      '<div class="pa-box">'+
-        '<div class="pa-main">'+
-          '<div>'+gallery(a.mainPhoto,[],'auction-preview',a.plant)+'</div>'+
-          '<div>'+
-            '<span class="pa-badge '+cls(p)+'">'+label(p)+'</span>'+
-            '<h1 class="pa-title">'+esc(a.plant||a.id)+'</h1>'+
-            '<div class="pa-muted">Аукцион '+esc(a.id)+(a.mode?' · '+esc(a.mode):'')+'</div>'+
-            (a.description?'<div class="pa-desc">'+esc(a.description)+'</div>':'')+
-            '<div>Начало: '+esc(dt(a.start,a.timezone))+'</div>'+
-            '<div>Окончание: '+esc(dt(a.end,a.timezone))+'</div>'+
-            notice(a,p)+
-            question(a,p)+
+      '<a class="pa-back" href="/auctions">← К списку аукционов</a>'+
+      '<section class="pa-panel pa-hero">'+
+        '<div class="pa-hero-gallery">'+gallery(a.mainPhoto,[],'auction-preview',a.plant)+'</div>'+
+        '<div class="pa-info">'+
+          '<span class="pa-badge '+cls(p)+'">'+label(p)+'</span>'+
+          '<h1 class="pa-title">'+esc(a.plant||a.id)+'</h1>'+
+          '<div class="pa-auction-id">Аукцион '+esc(a.id)+'</div>'+
+          (description?'<div class="pa-desc">'+esc(description)+'</div>':'')+
+          '<div class="pa-dates">'+
+            '<div class="pa-date-row"><span class="pa-calendar" aria-hidden="true"></span><span>Начало: '+esc(dt(a.start,a.timezone))+'</span></div>'+
+            '<div class="pa-date-row"><span class="pa-calendar" aria-hidden="true"></span><span>Окончание: '+esc(dt(a.end,a.timezone))+'</span></div>'+
           '</div>'+
+          notice(a,p)+
         '</div>'+
-      '</div>'+
+        '<aside class="pa-side pa-side-rules">'+timerMarkup(a,p)+rulesButton()+question(a,p)+'</aside>'+
+      '</section>'+
       '<div id="pa-detail-progress" class="pa-notice">Предварительные данные. Загружаем подтверждённые данные аукциона…</div>'+
     '</div>';
 
@@ -974,32 +1286,31 @@ function scheduleDetailRetry(){
   },DETAIL_RETRY_DELAY);
 }
 
-function handleDetailStaticData(d){
-  if(!d||d.ok!==true)return{ok:false,type:'api',message:String(d&&d.error||'неизвестная ошибка.')};
-  var r=acceptDetail(d);
-  if(!r.ok){
-    if(r.type!=='stale')detailProgress((r.type==='render'?'Ошибка отображения: ':'Ошибка данных: ')+r.message,true);
-    return r;
+function handleDetailSuccess(d){
+  activeDetailRequests=0;
+  clearDetailLoadTimers();
+
+  if(!d||d.ok!==true){
+    detailProgress('Ошибка сервера: '+String(d&&d.error?d.error:'неизвестная ошибка.'),true);
+    scheduleDetailRetry();
+    return;
   }
+
+  var r=acceptDetail(d);
+
+  if(!r.ok){
+    if(r.type==='stale')return;
+    detailProgress((r.type==='render'?'Ошибка отображения: ':'Ошибка данных: ')+r.message,true);
+    scheduleDetailRetry();
+    return;
+  }
+
   detailRetryCount=0;
   updateFreshnessNotice();
   checkFreshness();
-  return{ok:true};
-}
-
-function handleDetailSuccess(d){
-  // Legacy draft API has only one request, so it owns its completion here.
-  activeDetailRequests=0;
-  clearDetailLoadTimers();
-  var result=handleDetailStaticData(d);
-  if(!result.ok&&result.type!=='stale'){
-    if(result.type==='api')detailProgress('Ошибка сервера: '+result.message,true);
-    scheduleDetailRetry();
-  }
 }
 
 function requestDetailLegacy(){
-  activeDetailRequests=1;
   jsonp(
     {auction:aid},
     handleDetailSuccess,
@@ -1017,13 +1328,14 @@ function requestDetail(){
   activeDetailRequests=1;
   freshnessStartedAt=Date.now();
   clearDetailLoadTimers();
-  fetchState(encodeURIComponent(aid)+'.json',validateDetailSnapshot,handleDetailStaticData,function(error){
+  fetchState(encodeURIComponent(aid)+'.json',validateDetailSnapshot,handleDetailSuccess,function(error){
     // Drafts have no published snapshot yet. Only two explicit 404s may use
     // the existing direct-link API; timeout/invalid data never starts JSONP.
     if(error.missing&&!last){requestDetailLegacy();return;}
-    detailProgress((error.type==='render'?'Ошибка отображения: ':error.type==='data'?'Ошибка данных: ':'Ошибка связи: ')+error.message,true);
+    activeDetailRequests=0;
+    detailProgress('Ошибка связи: '+error.message,true);
     scheduleDetailRetry();
-  },function(){activeDetailRequests=0;});
+  });
 }
 
 function startDetailLoadCycle(){
@@ -1106,6 +1418,25 @@ function loadDetail(){
 }
 
 document.addEventListener('click',function(e){
+  var rulesOpen=e.target.closest('[data-rules-open]');
+  if(rulesOpen){
+    e.preventDefault();
+    openRules(rulesOpen);
+    return;
+  }
+
+  var rulesClose=e.target.closest('[data-rules-close]');
+  if(rulesClose){
+    e.preventDefault();
+    closeRules();
+    return;
+  }
+
+  if(rulesEl&&rulesEl.classList.contains('open')&&e.target===rulesEl){
+    closeRules();
+    return;
+  }
+
   var b=e.target.closest('[data-tg]');
   if(b){
     e.preventDefault();
@@ -1166,6 +1497,14 @@ document.addEventListener('click',function(e){
 });
 
 document.addEventListener('keydown',function(e){
+  if(rulesEl&&rulesEl.classList.contains('open')){
+    if(e.key==='Escape'){
+      e.preventDefault();
+      closeRules();
+    }
+    return;
+  }
+
   if(!lightboxEl||!lightboxEl.classList.contains('open'))return;
 
   if(e.key==='Escape'){
