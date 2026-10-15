@@ -381,32 +381,15 @@ function publicImageUrl(photo){
 
 function phase(a){
   a=a||{};
-  var s=String(a.status||'').trim();
-  var p=String(a.publicStatus||'').trim();
+  if(a.status==='Черновик')return'draft';
+  if(a.status==='Завершён')return'archive';
+  if(a.status==='Блиц-резерв')return'reserve';
+  if(a.status!=='Активен')return'ending';
   var n=Date.now();
-  var st=Date.parse(a.start);
-  var en=Date.parse(a.end);
-
-  if(s==='Черновик')return'draft';
-  if(s==='Завершён')return'archive';
-  if(s==='Блиц-резерв')return'reserve';
-  if(isFinite(st)&&st>n)return'upcoming';
-
-  if(
-    s==='Активен'||
-    s==='active'||
-    p==='active'||
-    p==='upcoming'||
-    p==='ending'||
-    (!s&&!p)
-  ){
-    if(isFinite(en)&&en<=n)return'ending';
-    return'active';
-  }
-
-  if(p==='archive')return'archive';
-  if(p==='reserve')return'reserve';
-  return'ending';
+  var st=publicDetailIsoTime_(a.start),en=publicDetailIsoTime_(a.end);
+  if(!isFinite(st)||!isFinite(en)||en<=st)return'ending';
+  if(st>n)return'upcoming';
+  return en<=n?'ending':'active';
 }
 
 function catalogPhase(a){
@@ -624,15 +607,25 @@ function validateCatalogSnapshot(data){
   return{ok:true,data:data};
 }
 
+function detailIsOlder(candidate,current){
+  if(!current)return false;
+  var nextTime=publicDetailIsoTime_(candidate.updatedAt);
+  var oldTime=publicDetailIsoTime_(current.updatedAt);
+  if(nextTime!==oldTime)return nextTime<oldTime;
+  var nextRevision=/^(\d+):/.exec(String(candidate.syncRevision||''));
+  var oldRevision=/^(\d+):/.exec(String(current.syncRevision||''));
+  return !!(nextRevision&&oldRevision&&Number.isSafeInteger(Number(nextRevision[1]))&&
+    Number.isSafeInteger(Number(oldRevision[1]))&&Number(nextRevision[1])<Number(oldRevision[1]));
+}
+
 function validateDetailSnapshot(snapshot){
-  if(!snapshot||typeof snapshot!=='object')return{ok:false,error:'Некорректный снимок.'};
-  if(snapshot.schemaVersion!=null&&snapshot.schemaVersion!==1)return{ok:false,error:'Неизвестная версия снимка.'};
-  if(snapshot.auctionId&&snapshot.auctionId!==aid)return{ok:false,error:'Снимок другого аукциона.'};
+  if(!publicDetailRecord_(snapshot)||snapshot.schemaVersion!==1||snapshot.auctionId!==aid||
+     !isFinite(publicDetailIsoTime_(snapshot.generatedAt))||
+     !publicDetailRevision_(snapshot.syncRevision))return{ok:false,error:'Некорректный снимок.'};
   var checked=validateDetail(snapshot.data);
   if(!checked.ok)return checked;
   if(snapshot.syncRevision!==snapshot.data.syncRevision)return{ok:false,error:'Версии снимка не совпадают.'};
-  if(last&&last.updatedAt&&snapshot.data.updatedAt&&
-    Date.parse(snapshot.data.updatedAt)<Date.parse(last.updatedAt))return{ok:false,error:'Получен более старый снимок.'};
+  if(detailIsOlder(snapshot.data,last))return{ok:false,error:'Получен более старый снимок.'};
   return{ok:true,data:snapshot.data};
 }
 
@@ -1171,30 +1164,98 @@ function detailKey(){
   return'paDetailCurrent:'+aid;
 }
 
-function validateDetail(d){
-  if(!d||typeof d!=='object')return{ok:false,error:'Пустой ответ API.'};
-  if(d.ok!==true)return{ok:false,error:String(d.error||'API вернул ошибку.')};
-  if(!d.auction||typeof d.auction!=='object')return{ok:false,error:'В ответе отсутствует объект auction.'};
-  if(String(d.auction.id||'').trim()!==aid)return{ok:false,error:'Ответ относится к другому аукциону.'};
-  if(!Array.isArray(d.cuttings))return{ok:false,error:'В ответе отсутствует массив cuttings.'};
+// R05: same detail contract on server and browser; no I/O or clock reads.
+function publicDetailRecord_(value) {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
 
-  for(var i=0;i<d.cuttings.length;i++){
-    var x=d.cuttings[i];
-    if(!x||typeof x!=='object'||!String(x.id||'').trim()){
-      return{ok:false,error:'Некорректный черенок №'+(i+1)+'.'};
+function publicDetailIsoTime_(value) {
+  if (typeof value !== 'string' ||
+      !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(value)) return NaN;
+  var time = Date.parse(value);
+  if (!isFinite(time)) return NaN;
+  var canonical = value.indexOf('.') < 0 ? value.replace(/Z$/, '.000Z') : value;
+  return new Date(time).toISOString() === canonical ? time : NaN;
+}
+
+function publicDetailInteger_(value, minimum) {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= minimum;
+}
+
+function publicDetailRevision_(value) {
+  return typeof value === 'string' && value.length > 0 && value.length <= 128 &&
+    value.trim() === value;
+}
+
+function publicDetailValidationError_(data, auctionId) {
+  if (!publicDetailRecord_(data) || data.ok !== true) return 'Некорректный ответ API.';
+  var a = data.auction;
+  if (!publicDetailRecord_(a) || typeof a.id !== 'string' || a.id !== auctionId ||
+      !/^[A-Za-z0-9_-]{1,64}$/.test(a.id)) return 'Ответ относится к другому аукциону.';
+  var statuses = ['Черновик', 'Активен', 'Блиц-резерв', 'Завершён'];
+  if (statuses.indexOf(a.status) < 0) return 'Неизвестный статус аукциона.';
+  if (a.publicStatus != null &&
+      (['active', 'upcoming', 'ending', 'reserve', 'draft', 'archive'].indexOf(a.publicStatus) < 0 ||
+       (a.publicStatus === 'archive') !== (a.status === 'Завершён'))) {
+    return 'Статусы аукциона не согласованы.';
+  }
+  var start = publicDetailIsoTime_(a.start), end = publicDetailIsoTime_(a.end);
+  var draft = a.status === 'Черновик';
+  if ((!draft || a.start != null) && !isFinite(start)) return 'Некорректная дата начала.';
+  if ((!draft || a.end != null) && !isFinite(end)) return 'Некорректная дата окончания.';
+  if (isFinite(start) && isFinite(end) && end <= start) return 'Окончание должно быть позже начала.';
+  if (!isFinite(publicDetailIsoTime_(data.updatedAt))) return 'Некорректное время обновления.';
+  // A direct builder/draft response may precede assignment of a publication revision.
+  if (data.syncRevision != null && !publicDetailRevision_(data.syncRevision)) return 'Некорректная версия данных.';
+  if (!Array.isArray(data.cuttings)) return 'В ответе отсутствует массив cuttings.';
+  var ids = Object.create(null), numbers = Object.create(null);
+  for (var i = 0; i < data.cuttings.length; i++) {
+    var x = data.cuttings[i], prefix = auctionId + '-C';
+    if (!publicDetailRecord_(x) || typeof x.id !== 'string' ||
+        x.id.indexOf(prefix) !== 0 || !/^\d+$/.test(x.id.slice(prefix.length)) || ids[x.id]) {
+      return 'Некорректный или повторяющийся ID черенка №' + (i + 1) + '.';
     }
-    if(!isFinite(Number(x.number))||!isFinite(Number(x.startPrice))||!isFinite(Number(x.step))){
-      return{ok:false,error:'Некорректные данные черенка '+String(x.id||i+1)+'.'};
+    ids[x.id] = true;
+    if (!publicDetailInteger_(x.number, 1) || numbers[x.number] ||
+        !publicDetailInteger_(x.startPrice, 1) || !publicDetailInteger_(x.step, 1)) {
+      return 'Некорректные номер, старт или шаг черенка ' + x.id + '.';
+    }
+    numbers[x.number] = true;
+    if (!publicDetailInteger_(x.bidCount, 0) ||
+        (x.currentPrice !== null && !publicDetailInteger_(x.currentPrice, 1)) ||
+        (x.bidCount === 0) !== (x.currentPrice === null)) {
+      return 'Некорректные данные ставок черенка ' + x.id + '.';
+    }
+    var expected = x.currentPrice === null ? x.startPrice : x.currentPrice + x.step;
+    if (!publicDetailInteger_(expected, 1) || !publicDetailInteger_(x.nextBid, 1) || x.nextBid !== expected) {
+      return 'Некорректная следующая ставка черенка ' + x.id + '.';
+    }
+    if (typeof x.sold !== 'boolean' ||
+        (x.sold ? !publicDetailInteger_(x.finalPrice, 1) : x.finalPrice !== null)) {
+      return 'Некорректный итог черенка ' + x.id + '.';
     }
   }
+  if (a.blitz != null && (!publicDetailRecord_(a.blitz) || typeof a.blitz.enabled !== 'boolean' ||
+      (a.blitz.enabled && (!publicDetailInteger_(a.blitz.price, 1) ||
+                          !publicDetailInteger_(a.blitz.paymentMinutes, 1))))) {
+    return 'Некорректные условия блица.';
+  }
+  if (a.blitzSale != null && (!publicDetailRecord_(a.blitzSale) || typeof a.blitzSale.sold !== 'boolean' ||
+      (a.blitzSale.sold && !publicDetailInteger_(a.blitzSale.price, 1)))) {
+    return 'Некорректный результат блица.';
+  }
+  return '';
+}
 
-  return{ok:true};
+function validateDetail(d){
+  var error=publicDetailValidationError_(d,aid);
+  return error?{ok:false,error:error}:{ok:true};
 }
 
 function readDetail(){
   try{
     var x=JSON.parse(localStorage.getItem(detailKey())||'null');
-    if(!x||Date.now()-x.t>=DETAIL_CACHE_MS)return null;
+    if(!x||!publicDetailInteger_(x.t,0)||x.t>Date.now()||Date.now()-x.t>=DETAIL_CACHE_MS)return null;
     var v=validateDetail(x.d);
     return v.ok?x.d:null;
   }catch(e){
@@ -1276,13 +1337,8 @@ function acceptDetail(d){
   var v=validateDetail(d);
   if(!v.ok)return{ok:false,type:'validation',message:v.error};
 
-  if(last&&last.updatedAt&&d.updatedAt){
-    var oldTime=Date.parse(last.updatedAt);
-    var newTime=Date.parse(d.updatedAt);
-
-    if(isFinite(oldTime)&&isFinite(newTime)&&newTime<oldTime){
-      return{ok:false,type:'stale',message:'Получен более старый ответ.'};
-    }
+  if(detailIsOlder(d,last)){
+    return{ok:false,type:'stale',message:'Получен более старый ответ.'};
   }
 
   try{
