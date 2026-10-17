@@ -289,6 +289,7 @@ var catalogTimer=null;
 var catalogRefreshInFlight=false;
 var cbn=0;
 var last=null;
+var renderedDetailPhase='';
 var stateFetchGeneration=Object.create(null);
 var lastCatalog=null;
 var activeDetailRequests=0;
@@ -1145,6 +1146,7 @@ function buildDetailView(d){
 function renderDetail(d){
   var view=buildDetailView(d);
   app.innerHTML=view.html;
+  renderedDetailPhase=view.phase;
 
   if(view.phase==='draft'){
     stopPoll();
@@ -1443,7 +1445,15 @@ function stopPoll(){
   }
 }
 
-function updateCounts(){
+function reconcileDetailPhase(){
+  if(!last||phase(last.auction)===renderedDetailPhase)return false;
+  renderDetail(last);
+  requestDetail();
+  return true;
+}
+
+function updateCounts(skipPhaseRefresh){
+  if(!skipPhaseRefresh&&reconcileDetailPhase())return;
   app.querySelectorAll('[data-count]').forEach(function(n){
     var s=n.querySelector('span');
     var target=n.getAttribute('data-count');
@@ -1459,7 +1469,7 @@ function updateCounts(){
 
 function startCount(){
   stopCount();
-  updateCounts();
+  updateCounts(true);
   countTimer=setInterval(updateCounts,1000);
 }
 
@@ -1524,7 +1534,13 @@ document.addEventListener('click',function(e){
   var b=e.target.closest('[data-tg]');
   if(b){
     e.preventDefault();
-    tg(b.getAttribute('data-tg'));
+    var payload=b.getAttribute('data-tg');
+    if(/^(bid_|blitz_)/.test(payload)&&(!last||phase(last.auction)!=='active')){
+      reconcileDetailPhase();
+      requestDetail();
+      return;
+    }
+    tg(payload);
     return;
   }
 
