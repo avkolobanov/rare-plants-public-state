@@ -19,7 +19,7 @@ var FRESHNESS_MIN_INTERVAL=30000;
 
 var host=document.getElementById('plant-auction-universal');
 if(!host)return;
-host.innerHTML='<div id="pa-app"><div class="pa-load">Загружаем...</div></div>';
+host.innerHTML='<div id="pa-app"><div class="pa-load" aria-busy="true"></div></div>';
 
 var app=document.getElementById('pa-app');
 if(!app||app.dataset.init)return;
@@ -60,6 +60,7 @@ if(!style){
 #pa-app button{font:inherit}
 #pa-app .pa-action,#pa-app .pa-btn{font-weight:700}
 .pa-load,.pa-err{text-align:center;padding:20px 0;background:transparent;color:#0c3128}.pa-err{color:#8b1e1e}
+.pa-load:empty::after,.pa-rules-load:empty::after{content:"";display:inline-block;width:28px;height:4px;border-radius:2px;background:currentColor;opacity:.25}
 .pa-panel,.pa-box{
   background:linear-gradient(115deg,rgba(10,55,40,.88),rgba(9,46,35,.76));
   border:1px solid var(--pa-line);border-radius:18px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)
@@ -853,7 +854,7 @@ function refreshCatalog(){
       return{ok:false,type:'render',message:error&&error.message||String(error)};
     }
   },function(){
-    if(!lastCatalog)app.innerHTML='<div class="pa-err">Не удалось загрузить список аукционов.</div>';
+    // Quiet refresh: preserve current catalog or the neutral initial placeholder.
   },function(){catalogRefreshInFlight=false;});
 }
 
@@ -863,7 +864,7 @@ function loadCatalog(){
   if(cached){
     renderCatalog(cached);
   }else{
-    app.innerHTML='<div class="pa-load">Загружаем аукционы...</div>';
+    app.innerHTML='<div class="pa-load" aria-busy="true"></div>';
   }
 
   refreshCatalog();
@@ -959,7 +960,7 @@ function ensureRulesModal(){
   rulesEl.innerHTML=
     '<div class="pa-rules-panel" role="dialog" aria-modal="true" aria-labelledby="pa-rules-title">'+
       '<button class="pa-rules-close" type="button" data-rules-close="1" aria-label="Закрыть"></button>'+
-      '<div class="pa-rules-content"><div class="pa-rules-load">Загружаем условия аукциона...</div></div>'+
+      '<div class="pa-rules-content"><div class="pa-rules-load" aria-busy="true"></div></div>'+
     '</div>';
 
   document.body.appendChild(rulesEl);
@@ -1003,7 +1004,7 @@ function openRules(trigger){
   if(rulesLoading)return;
   rulesLoading=true;
 
-  if(content)content.innerHTML='<div class="pa-rules-load">Загружаем условия аукциона...</div>';
+  if(content)content.innerHTML='<div class="pa-rules-load" aria-busy="true"></div>';
 
   fetchState('auction-rules.json',validateRulesSnapshot,function(data){
     rulesLoading=false;
@@ -1011,7 +1012,7 @@ function openRules(trigger){
     renderRules(data);
   },function(){
     rulesLoading=false;
-    if(content)content.innerHTML='<div class="pa-rules-error">Не удалось загрузить условия аукциона. Закройте окно и попробуйте ещё раз.</div>';
+    if(content)content.innerHTML='<div class="pa-rules-load" aria-busy="false"></div>';
   });
 }
 
@@ -1134,9 +1135,6 @@ function buildDetailView(d){
           d.cuttings.map(function(x){return cut(x,p,wholeBlitzSold);}).join('')+
         '</div>':
         '')+
-      '<div id="pa-detail-status" class="pa-foot">'+
-        (p==='archive'?'':'Данные обновляются автоматически')+
-      '</div>'+
     '</div>';
 
   return{phase:p,html:html};
@@ -1303,24 +1301,14 @@ function renderDetailPreview(a){
         '</div>'+
         '<aside class="pa-side pa-side-rules">'+timerMarkup(a,p)+rulesButton()+question(a,p)+'</aside>'+
       '</section>'+
-      '<div id="pa-detail-progress" class="pa-notice">Предварительные данные. Загружаем подтверждённые данные аукциона…</div>'+
     '</div>';
 
   startCount();
 }
 
 function detailProgress(text,isError){
-  var n=document.getElementById('pa-detail-progress')||document.getElementById('pa-detail-status');
-
-  if(n){
-    n.className=isError?(last?'pa-notice pa-warn':'pa-err'):'pa-notice';
-    n.textContent=text;
-    return;
-  }
-
-  if(!last){
-    app.innerHTML=(isError?'<div class="pa-err">':'<div class="pa-load">')+esc(text)+'</div>';
-  }
+  // Public UI stays quiet: preserve the confirmed screen, preview or initial placeholder.
+  // Validation, error classification and retry limits remain in their existing callers.
 }
 
 function clearDetailLoadTimers(){
@@ -1536,7 +1524,7 @@ function loadDetail(){
   var preview=catalogAuction(aid);
 
   if(preview)renderDetailPreview(preview);
-  else app.innerHTML='<div class="pa-load">Загружаем аукцион...</div>';
+  else app.innerHTML='<div class="pa-load" aria-busy="true"></div>';
 
   startDetailLoadCycle();
 }
@@ -1675,7 +1663,7 @@ document.addEventListener('error',function(e){
   if(im&&im.matches&&im.matches('#pa-app img[data-pa-img="1"]')){
     im.style.display='none';
     var p=im.closest('.pa-img');
-    if(p)p.textContent='Фото не загрузилось';
+    if(p)p.textContent='';
   }
 },true);
 
