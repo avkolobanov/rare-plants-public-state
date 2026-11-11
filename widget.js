@@ -118,6 +118,27 @@ if(!style){
 .pa-calendar{width:26px;height:26px;border:2px solid currentColor;border-radius:4px;position:relative;flex:0 0 auto}
 .pa-calendar:before{content:"";position:absolute;left:3px;right:3px;top:6px;border-top:2px solid currentColor}
 .pa-calendar:after{content:"";position:absolute;left:6px;right:6px;top:-5px;height:8px;border-left:2px solid currentColor;border-right:2px solid currentColor}
+/* ADDITIVE — do not change current Plant Hunt .pa-* style definitions. */
+.pa-reminder{display:flex;flex-direction:column;align-items:stretch;gap:7px;min-width:0}
+.pa-reminder-btn{width:100%;height:var(--pa-button-h);min-height:var(--pa-button-h);border:1.5px solid rgba(137,218,230,.86);border-radius:999px;background:rgba(42,115,119,.24);color:#f4f7f5;display:flex;align-items:center;justify-content:center;gap:9px;padding:0 9px;text-align:center;font-size:15px!important;font-weight:700!important;line-height:1.1;cursor:pointer;white-space:nowrap;transition:background-color .16s ease,border-color .16s ease}
+.pa-reminder-btn:hover{background:rgba(56,144,150,.40);border-color:#b6f0f3}
+.pa-reminder-btn:focus-visible{outline:2px solid #d9faff;outline-offset:3px}
+.pa-reminder-btn svg{width:18px;height:18px;flex:none;fill:#8ce0f6}
+.pa-reminder-caption{font-size:12px;line-height:1.25;color:#d9e8e4;text-align:center;margin:0}
+@media(max-width:760px){.pa-reminder-btn{height:56px;min-height:56px}}
+/* Main catalog card — independent Telegram button over the existing whole-card link. */
+.pa-card{position:relative}
+.pa-card-target{position:absolute;inset:0;z-index:1;border-radius:18px}
+.pa-card-target:focus-visible{outline:3px solid #8ae3ef;outline-offset:-4px}
+.pa-card-reminder{position:relative;z-index:2;margin:0 0 17px}
+/* Keep the date at its original position when the catalog reminder is present.
+   Add the button, gap, caption line and bottom margin to the original body height. */
+@media(min-width:641px){
+  .pa-card-body:has(.pa-card-reminder){min-height:calc(268px + 52px + 7px + 15px + 17px)}
+}
+.pa-card-reminder .pa-reminder-btn{height:52px;min-height:52px}
+@media(max-width:480px){.pa-card-reminder .pa-reminder-btn{height:50px;min-height:50px;font-size:14px!important}}
+@media(prefers-reduced-motion:reduce){.pa-reminder-btn{transition:none!important}}
 .pa-side{display:flex;flex-direction:column;align-items:stretch;gap:16px}
 .pa-timer{height:106px;border:1px solid rgba(255,255,255,.18);border-radius:14px;background:rgba(6,38,29,.78);padding:14px 20px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
 .pa-timer-label{font-size:18px;color:#e4ebe7;margin-bottom:2px;text-align:center}
@@ -788,7 +809,9 @@ function card(x){
   var description=descriptionText(x.description);
   var action=x.status==='archive'?'Посмотреть результаты':'Открыть аукцион';
 
-  return'<a class="pa-card" href="/auctions?auction='+encodeURIComponent(x.id)+'">'+
+  var reminder=reminderMarkup(x,x.status,true);
+  var href='/auctions?auction='+encodeURIComponent(x.id);
+  return (reminder?'<article class="pa-card">':'<a class="pa-card" href="'+href+'">')+
     '<div class="pa-img">'+p+'<span class="pa-badge '+cls(x.status)+'">'+label(x.status)+'</span></div>'+
     '<div class="pa-card-body">'+
       '<h3 class="pa-card-title">'+esc(x.plant||x.id)+'</h3>'+
@@ -796,10 +819,11 @@ function card(x){
       '<div class="pa-card-description">'+esc(description)+'</div>'+
       '<div class="pa-card-meta">'+
         '<div class="pa-card-row"><span>'+dl+'</span><b>'+esc(dt(dv,x.timezone))+'</b></div>'+
+        reminder+
         '<div class="pa-card-action">'+esc(action)+'<span class="pa-card-action-arrow" aria-hidden="true">→</span></div>'+
       '</div>'+
     '</div>'+
-  '</a>';
+  (reminder?'<a class="pa-card-target" href="'+href+'" aria-label="'+esc(action)+' '+esc(x.id)+'"></a></article>':'</a>');
 }
 
 function renderCatalog(d){
@@ -823,6 +847,8 @@ function renderCatalog(d){
   app.innerHTML='<div class="pa-catalog-view">'+sections.join('<div class="pa-group-divider" aria-hidden="true"></div>')+'</div>';
   scheduleAuctionLayoutSync();
   updateFreshnessNotice();
+  if(app.querySelector(".pa-reminder"))startCount();
+  else stopCount();
 }
 
 function readCat(){
@@ -921,6 +947,22 @@ function notice(a,p){
     return'<div class="pa-notice">Аукцион завершён. Ниже показаны результаты.</div>';
   }
   return'';
+}
+
+function paReminderSvg_(){
+  return '<svg aria-hidden="true" viewBox="0 0 24 24">'+
+    '<path d="M21.5 3.7 2.7 11.05c-1.1.45-1.08 1.1-.2 1.38l4.65 1.46 1.83 5.7c.23.68.11.96.83.96.55 0 .8-.25 1.1-.55l2.26-2.2 4.69 3.46c.86.48 1.48.23 1.7-.8l3.19-15.03c.32-1.3-.5-1.9-1.25-1.56ZM8.23 13.57l10.6-6.7c.52-.32 1-.15.6.2L10.7 14.9l-.36 3.47-2.11-4.8Z"/>'+
+  '</svg>';
+}
+function reminderMarkup(a,p,forCard){
+  var id=a.id,deadline=Date.parse(a.start);
+  if(p!=='upcoming'||!/^A\d{1,32}$/.test(id)||!(deadline>Date.now()))return '';
+  return '<div class="pa-reminder'+(forCard?' pa-card-reminder':'')+'" data-reminder-start="'+deadline+'" data-auction-id="'+esc(id)+'">'+
+    '<button type="button" class="pa-reminder-btn" data-pa-remind="'+esc(id)+'">'+
+      paReminderSvg_()+'<span>Напомнить в Telegram</span>'+
+    '</button>'+
+    '<p class="pa-reminder-caption">Напомним за 15 минут и при старте торгов</p>'+
+  '</div>';
 }
 
 function rulesButton(){
@@ -1127,7 +1169,7 @@ function buildDetailView(d){
           '</div>'+
           notice(a,p)+
         '</div>'+
-        '<aside class="pa-side pa-side-rules">'+timerMarkup(a,p)+rulesButton()+question(a,p)+'</aside>'+
+        '<aside class="pa-side pa-side-rules">'+timerMarkup(a,p)+reminderMarkup(a,p)+rulesButton()+question(a,p)+'</aside>'+
       '</section>'+
       blitz(a,p)+
       (d.cuttings.length?
@@ -1299,7 +1341,7 @@ function renderDetailPreview(a){
           '</div>'+
           notice(a,p)+
         '</div>'+
-        '<aside class="pa-side pa-side-rules">'+timerMarkup(a,p)+rulesButton()+question(a,p)+'</aside>'+
+        '<aside class="pa-side pa-side-rules">'+timerMarkup(a,p)+reminderMarkup(a,p)+rulesButton()+question(a,p)+'</aside>'+
       '</section>'+
     '</div>';
 
@@ -1471,6 +1513,9 @@ function fitAllTimerValues(){
 
 function updateCounts(skipPhaseRefresh){
   if(!skipPhaseRefresh&&reconcileDetailPhase())return;
+  app.querySelectorAll('[data-reminder-start]').forEach(function(node){
+    if(Number(node.getAttribute('data-reminder-start'))<=Date.now())node.remove();
+  });
   app.querySelectorAll('[data-count]').forEach(function(n){
     var s=n.querySelector('span');
     var target=n.getAttribute('data-count');
@@ -1530,6 +1575,14 @@ function loadDetail(){
 }
 
 document.addEventListener('click',function(e){
+  var reminderButton=e.target.closest('[data-pa-remind]');
+  if(reminderButton){
+    var wrapper=reminderButton.closest('[data-reminder-start]');
+    if(wrapper&&Number(wrapper.getAttribute('data-reminder-start'))>Date.now()){
+      tg('remind_'+reminderButton.getAttribute('data-pa-remind'));
+    }else if(wrapper)wrapper.remove();
+    return;
+  }
   var rulesOpen=e.target.closest('[data-rules-open]');
   if(rulesOpen){
     e.preventDefault();
